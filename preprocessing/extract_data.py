@@ -55,19 +55,31 @@ def main():
     except IOError as e:
         
         print("Incorrect path: {}".format(e))
-               
+    
+    # iterate through all the files and if the pair matches the name in
+    # "crypto_names" then copy the file to "directory_name"           
     for entry in data_files:
-        #print(entry.name)
-        for name_begin in crypto_names:
-            if entry.name.startswith(name_begin):
-                for name_end in crypto_names:
-                    if entry.name.endswith("_"+name_end+".csv"):
-                        print(entry.name)
-                        
-                        src = current_working_dir + "\\clean_data\\pure_stable_crypto\\"+entry.name
-                        dst = current_working_dir + "\\clean_data\\"+directory_name
-                        shutil.copy2(src,dst)
-        
+        try:
+            #print(entry.name)
+            for name_begin in crypto_names:
+                if entry.name.startswith(name_begin):
+                    for name_end in crypto_names:
+                        if entry.name.endswith("_"+name_end+".csv"):
+                            print(entry.name)
+                            
+                            src = current_working_dir\
+                                    +"\\clean_data\\pure_stable_crypto\\"\
+                                    +entry.name
+                                    
+                            dst = current_working_dir\
+                                    +"\\clean_data\\"\
+                                    +directory_name
+                                    
+                            shutil.copy2(src,dst)
+                            
+        except FileNotFoundError as e:
+            print("File not found: {}".format(e))
+            print("Next")       
         
 if __name__ == '__main__':
     main()
