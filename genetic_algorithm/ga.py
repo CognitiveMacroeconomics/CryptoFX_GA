@@ -36,12 +36,13 @@ class Chromosomes:
 #        print("In init Chromosomes")
         self.chromosome = chromosome
         self.fitness = Chromosomes.uptade_fitnesss(chromosome)
-        pass
+        
     
     def crossover(self, mate):
         """
         Method used to mate the chromosome with another chromosome,
         resulting in a new chromosome being returned.
+        One Point Crossover
         """
         pivot = randint(0, len(self.chromosome) - 1)
         chromosome1 = self.chromosome[:pivot] + mate.chromosome[pivot:]
@@ -49,13 +50,26 @@ class Chromosomes:
 
         return Chromosomes(chromosome1), Chromosomes(chromosome2)
     
-    def mutate():
+    def mutate(self):
         """
         Method used to generate a new chromosome based on a change in a random
         character in the geene of this chromosome. A new chormosome will be
         created, but this original will not be affected.
         """
-        pass
+#        print("In mutation funtion")
+       
+        genes = list(self.chromosome)
+#        print("Genes are:{}".format(genes))
+        new_gene = randint(0, Chromosomes.num_crypto - 1)
+#        print("New gene is:{}".format(new_gene))
+        idx = randint(0, len(genes) - 1)
+#        print("The index is :{}".format(idx))
+        genes[idx] = new_gene
+
+        return Chromosomes(genes)
+        
+        
+                
     
     @staticmethod
     def uptade_fitnesss(chromosome):
@@ -147,7 +161,7 @@ class Population:
     generate a new collection of chromosome objects.      
     """
     _tournamnetSize = 3
-    _num_offsprings = 2
+    _num_offsprings = 100
     
     def __init__(self, size=10, crossover=1, mutation=1):
         self.crossover = crossover
@@ -161,9 +175,9 @@ class Population:
             
         self.entire_population = list(sorted(buf[:size], key=lambda x: x.fitness, reverse=True))
         
-        print("The entire population is:")
-        for single_chromosome in self.entire_population:
-            print("{}\t{}".format(single_chromosome.chromosome, single_chromosome.fitness))
+#        print("The entire population is:")
+#        for single_chromosome in self.entire_population:
+#            print("{}\t{}".format(single_chromosome.chromosome, single_chromosome.fitness))
         
     
     def _tournament_selection(self):
@@ -189,32 +203,46 @@ class Population:
         A helper method used to select two parents from the population using a
         tournament selection algorithm
         """
-        print("In select Parent")
+#        print("In select Parent")
         return (self._tournament_selection(), self._tournament_selection())
     
     def evolve(self):
         """
         Method to evolve the population of chromosomes.
         """
-        print("In Population evolve")
+#        print("In Population evolve")
         #len(self.entire_population)/2
 #        buf = sorted(self.entire_population[:8], key=lambda x: x.fitness)
         old_population = self.entire_population[:len(self.entire_population)-self._num_offsprings]
-        for i in range(len(old_population)):
-            print("{}".format(old_population[i].chromosome))
+#        for i in range(len(old_population)):
+#            print("{}".format(old_population[i].chromosome))
+        
+        buf = []
         
         i = 0
         while i <  self._num_offsprings/2: #size:
             if random() <= self.crossover:
                 (p1, p2) = self._selectParents()
-                print("P1 is:\n{}".format(p1.chromosome))
-                print("P2 is:\n{}".format(p2.chromosome))
+                #print("P1 is:\n{}".format(p1.chromosome))
+                #print("P2 is:\n{}".format(p2.chromosome))
                 offspring_crossover = p1.crossover(p2)
-                print("The off-springs are:")
+                #print("The off-springs are:")
+                #for child in offspring_crossover:
+                    #print("{}\t{}".format(child.chromosome, child.fitness))
                 for offspring in offspring_crossover:
-                    print("{}\t{}".format(offspring.chromosome, offspring.fitness))
-                
+                    if random() <= self.mutation:
+                        mutated_offspring = offspring.mutate()
+                        buf.append(mutated_offspring)
+#                        print("Mutated offspring is:{}".format(mutated_offspring.chromosome))
+                    else:
+                        buf.append(offspring)
+        
                 i += 1
+        entire_population_temp = old_population + buf
+        self.entire_population = list(sorted(entire_population_temp[:], key=lambda x: x.fitness, reverse = True))
+#        for pop in self.entire_population:
+#            print("{}\t{}".format(pop.chromosome, pop.fitness))
+            
         
         pass
 
@@ -226,14 +254,14 @@ if __name__ == "__main__":
     start_crypto_currency = "ADA"
     end_crypto_currency = "ZEC"
     
-    maxGenerations = 1
+    maxGenerations = 20000
     Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index = source.main(start_crypto_currency,end_crypto_currency)
     
-    Chromosomes.chromosome_length = 4
+    Chromosomes.chromosome_length = 5
     Chromosomes.num_crypto = 34
-    pop = Population(size=8, crossover=0.8, mutation=0.3)
+    pop = Population(size = 2000, crossover = 0.8, mutation = 0.2)
     
     for i in range(1, maxGenerations + 1):
         print("Generation: {}".format(i))
-        #print("{}".format(pop.entire_population[0].chromosome))
+        print("{}\t{}".format(pop.entire_population[0].chromosome, pop.entire_population[0].fitness))
         pop.evolve()

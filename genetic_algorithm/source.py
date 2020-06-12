@@ -155,8 +155,8 @@ def read_data(start_exchange_currency, end_exchange_currency):
     for time in range(num_mins):
         for j in range(0, num_rows):
             for k in range(0, num_columns):
-                if j!=2:
-                    if k!=2:
+                if j!=intrd_currency_index:
+                    if k!=intrd_currency_index:
                         if(temp_matrix[time][j][k] == 0):
                             #temp_matrix[time][j][k] = -1
                             temp_matrix[time][j][k] = temp_matrix[time][j][intrd_currency_index] * temp_matrix[time][intrd_currency_index][k]
@@ -176,20 +176,20 @@ def main(start_exchange_currency, end_exchange_currency):
                                                    end_exchange_currency)
     return exchange_rate_matrix, crypto_index
 
-if __name__ == "__main__":
-    
-    start_exchange_currency =  "ADA"
-    end_exchange_currency = "ZEC"
-    
-#    exchange_rate_matrix, crypto_index = read_data(start_exchange_currency, 
-#                                              end_exchange_currency)
-    crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, end_exchange_currency)
-    
-    writer = pd.ExcelWriter('pure_crypto_exchnages2.xlsx', engine='xlsxwriter')
-    
-    for i in range(exchange_rate_matrix.shape[0]):
-        df = pd.DataFrame(exchange_rate_matrix[i])
-        df.to_excel(writer, sheet_name= 'Time_'+str(i))
-     
-    writer.save()
+#if __name__ == "__main__":
+#    
+#    start_exchange_currency =  "ADA"
+#    end_exchange_currency = "ZEC"
+#    
+##    exchange_rate_matrix, crypto_index = read_data(start_exchange_currency, 
+##                                              end_exchange_currency)
+#    crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, end_exchange_currency)
+#    
+#    writer = pd.ExcelWriter('pure_crypto_exchnages_temp.xlsx', engine='xlsxwriter')
+#    
+#    for i in range(exchange_rate_matrix.shape[0]):
+#        df = pd.DataFrame(exchange_rate_matrix[i])
+#        df.to_excel(writer, sheet_name= 'Time_'+str(i))
+#     
+#    writer.save()
     
