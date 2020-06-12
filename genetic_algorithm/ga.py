@@ -38,13 +38,16 @@ class Chromosomes:
         self.fitness = Chromosomes.uptade_fitnesss(chromosome)
         pass
     
-    def mate():
+    def crossover(self, mate):
         """
         Method used to mate the chromosome with another chromosome,
         resulting in a new chromosome being returned.
         """
-        
-        pass
+        pivot = randint(0, len(self.chromosome) - 1)
+        chromosome1 = self.chromosome[:pivot] + mate.chromosome[pivot:]
+        chromosome2 = mate.chromosome[:pivot] + self.chromosome[pivot:]
+
+        return Chromosomes(chromosome1), Chromosomes(chromosome2)
     
     def mutate():
         """
@@ -144,6 +147,7 @@ class Population:
     generate a new collection of chromosome objects.      
     """
     _tournamnetSize = 3
+    _num_offsprings = 2
     
     def __init__(self, size=10, crossover=1, mutation=1):
         self.crossover = crossover
@@ -160,7 +164,7 @@ class Population:
         print("The entire population is:")
         for single_chromosome in self.entire_population:
             print("{}\t{}".format(single_chromosome.chromosome, single_chromosome.fitness))
-        pass
+        
     
     def _tournament_selection(self):
         """
@@ -193,15 +197,22 @@ class Population:
         Method to evolve the population of chromosomes.
         """
         print("In Population evolve")
-        size = len(self.entire_population)
-        print("Size of the population is:{}".format(size))
+        #len(self.entire_population)/2
+#        buf = sorted(self.entire_population[:8], key=lambda x: x.fitness)
+        old_population = self.entire_population[:len(self.entire_population)-self._num_offsprings]
+        for i in range(len(old_population)):
+            print("{}".format(old_population[i].chromosome))
         
         i = 0
-        while i < 1: #size:
+        while i <  self._num_offsprings/2: #size:
             if random() <= self.crossover:
                 (p1, p2) = self._selectParents()
                 print("P1 is:\n{}".format(p1.chromosome))
                 print("P2 is:\n{}".format(p2.chromosome))
+                offspring_crossover = p1.crossover(p2)
+                print("The off-springs are:")
+                for offspring in offspring_crossover:
+                    print("{}\t{}".format(offspring.chromosome, offspring.fitness))
                 
                 i += 1
         
