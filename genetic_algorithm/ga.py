@@ -4,7 +4,7 @@ Created on Fri Feb 21 09:45:03 2020
 
 @author: shamid
 """
-from random import randint, random, choice 
+from random import randint, random, choice, sample
 import source
 
 __all__ = ['Chromosomes','Population']
@@ -38,17 +38,100 @@ class Chromosomes:
         self.fitness = Chromosomes.uptade_fitnesss(chromosome)
         
     
-    def crossover(self, mate):
+    def crossover_onepoint(self, mate):
         """
         Method used to mate the chromosome with another chromosome,
         resulting in a new chromosome being returned.
         One Point Crossover
         """
         pivot = randint(0, len(self.chromosome) - 1)
-        chromosome1 = self.chromosome[:pivot] + mate.chromosome[pivot:]
-        chromosome2 = mate.chromosome[:pivot] + self.chromosome[pivot:]
+        chromosome1_temp = self.chromosome[:pivot] + mate.chromosome[pivot:]
+        chromosome1 = []
+        for i in range(len(chromosome1_temp)):
+            while chromosome1_temp.count(chromosome1_temp[i])>1 and i >= pivot:
+                print("Here1:{}".format(chromosome1_temp[i]))
+                gene = randint(0, Chromosomes.num_crypto - 1)
+                print("Changed to:{}".format(gene))
+                chromosome1_temp[i] = gene
+            chromosome1.append(chromosome1_temp[i])
+            
+        chromosome2_temp = mate.chromosome[:pivot] + self.chromosome[pivot:]
+        chromosome2 = []
+        for i in range(len(chromosome2_temp)):
+            while chromosome2_temp.count(chromosome2_temp[i])>1 and i >= pivot:
+                print("Here2:{}".format(chromosome2_temp[i]))
+                gene = randint(0, Chromosomes.num_crypto - 1)
+                print("Changed to:{}".format(gene))
+                chromosome2_temp[i] = gene
+            chromosome2.append(chromosome2_temp[i])
 
         return Chromosomes(chromosome1), Chromosomes(chromosome2)
+    
+    def crossover_ord1(self, mate):
+        """
+        Method used to mate the chromosome with another chromosome,
+        resulting in a new chromosome being returned.
+        Order One Crossover
+        """
+        p1 = self.chromosome
+        p2 = mate.chromosome
+        
+        size = len(p1)
+        r1, r2 = sample(range(size), 2)
+        if r1 > r2:
+            r1, r2 = r2, r1
+    
+            
+        child1 = [-1] * size
+        print("r1:{}\tr2:{}".format(r1,r2))
+        for i in range(r1 ,r2+1):
+            child1[i] = p1[i]
+            
+        #print("child 1 is:{}".format(child1))
+        
+        
+        p2_rotate = p2[r2+1:]+p2[:r2+1]
+        #print("P2 rotate is:{}".format(p2_rotate))
+        
+        temp1 = [0] * (size-(r2-r1)-1) 
+        j = 0
+        for i in range(size):
+            if p2_rotate[i] not in child1:
+                temp1[j] = p2_rotate[i]
+                j += 1
+            if j == len(temp1):
+                break
+            
+        print("temp is:{}".format(temp1))
+        for i in range(len(temp1)):
+            idx = (r2 + i + 1) % size
+            child1[idx] = temp1[i]
+            
+        print("Child1 is:{}".format(child1))
+        
+        child2 = [-1] * size
+        for i in range(r1, r2+1):
+            child2[i] = p2[i]
+            
+                
+        p1_rotate = p1[r2+1:]+p1[:r2+1]
+        
+        temp2 = [0] * (size-(r2-r1)-1)
+        j = 0
+        for i in range(size):
+            if p1_rotate[i] not in child2:
+                temp2[j] = p1_rotate[i]
+                j += 1
+            if j == len(temp2):
+                break
+                
+        for i in range(len(temp2)):
+            idx = (r2 + i + 1) % size
+            child2[idx] = temp2[i]
+            
+        print("Child2 is:{}".format(child2))
+        
+        return Chromosomes(child1), Chromosomes(child2)
     
     def mutate(self):
         """
@@ -138,9 +221,8 @@ class Chromosomes:
         chromosome = []
         while len(chromosome) < (Chromosomes.chromosome_length):
             gene = randint(0, Chromosomes.num_crypto - 1)
-            chromosome.append(gene)
-#            if gene not in chromosome:
-#                chromosome.append(gene)
+            if gene not in chromosome:
+                chromosome.append(gene)
             
         #print("The gene is:{}".format(gene))
         
@@ -161,7 +243,7 @@ class Population:
     generate a new collection of chromosome objects.      
     """
     _tournamnetSize = 3
-    _num_offsprings = 100
+    _num_offsprings = 2
     
     def __init__(self, size=10, crossover=1, mutation=1):
         self.crossover = crossover
@@ -175,9 +257,9 @@ class Population:
             
         self.entire_population = list(sorted(buf[:size], key=lambda x: x.fitness, reverse=True))
         
-#        print("The entire population is:")
-#        for single_chromosome in self.entire_population:
-#            print("{}\t{}".format(single_chromosome.chromosome, single_chromosome.fitness))
+        print("The entire population is:")
+        for single_chromosome in self.entire_population:
+            print("{}\t{}".format(single_chromosome.chromosome, single_chromosome.fitness))
         
     
     def _tournament_selection(self):
@@ -223,12 +305,12 @@ class Population:
         while i <  self._num_offsprings/2: #size:
             if random() <= self.crossover:
                 (p1, p2) = self._selectParents()
-                #print("P1 is:\n{}".format(p1.chromosome))
-                #print("P2 is:\n{}".format(p2.chromosome))
-                offspring_crossover = p1.crossover(p2)
-                #print("The off-springs are:")
-                #for child in offspring_crossover:
-                    #print("{}\t{}".format(child.chromosome, child.fitness))
+                print("P1 is:\n{}\t{}".format(p1.chromosome, p1.fitness))
+                print("P2 is:\n{}\t{}".format(p2.chromosome, p2.fitness))
+                offspring_crossover = p1.crossover_ord1(p2)
+                print("The off-springs are:")
+                for child in offspring_crossover:
+                    print("{}\t{}".format(child.chromosome, child.fitness))
                 for offspring in offspring_crossover:
                     if random() <= self.mutation:
                         mutated_offspring = offspring.mutate()
@@ -240,8 +322,9 @@ class Population:
                 i += 1
         entire_population_temp = old_population + buf
         self.entire_population = list(sorted(entire_population_temp[:], key=lambda x: x.fitness, reverse = True))
-#        for pop in self.entire_population:
-#            print("{}\t{}".format(pop.chromosome, pop.fitness))
+        print("New Population")
+        for pop in self.entire_population:
+            print("{}\t{}".format(pop.chromosome, pop.fitness))
             
         
         pass
@@ -254,14 +337,14 @@ if __name__ == "__main__":
     start_crypto_currency = "ADA"
     end_crypto_currency = "ZEC"
     
-    maxGenerations = 20000
+    maxGenerations = 1
     Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index = source.main(start_crypto_currency,end_crypto_currency)
     
-    Chromosomes.chromosome_length = 5
+    Chromosomes.chromosome_length = 15
     Chromosomes.num_crypto = 34
-    pop = Population(size = 2000, crossover = 0.8, mutation = 0.2)
+    pop = Population(size = 8, crossover = 0.8, mutation = 0.3)
     
     for i in range(1, maxGenerations + 1):
         print("Generation: {}".format(i))
-        print("{}\t{}".format(pop.entire_population[0].chromosome, pop.entire_population[0].fitness))
+        #print("{}\t{}".format(pop.entire_population[0].chromosome, pop.entire_population[0].fitness))
         pop.evolve()
