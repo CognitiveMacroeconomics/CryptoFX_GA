@@ -77,23 +77,24 @@ class Chromosomes:
         p2 = mate.chromosome
         
         size = len(p1)
-        r1, r2 = sample(range(size), 2)
+        r1, r2 = sample(range(size-1), 2)
         if r1 > r2:
             r1, r2 = r2, r1
-    
+
             
         offspring1 = [-1] * size
         print("r1:{}\tr2:{}".format(r1,r2))
         for i in range(r1 ,r2+1):
             offspring1[i] = p1[i]
             
-        #print("child 1 is:{}".format(child1))
+        print("child 1 is:{}".format(offspring1))
         
         
         p2_rotate = p2[r2+1:]+p2[:r2+1]
-        #print("P2 rotate is:{}".format(p2_rotate))
+        print("P2 rotate is:{}".format(p2_rotate))
         
         temp1 = [0] * (size-(r2-r1)-1) 
+
         j = 0
         for i in range(size):
             if p2_rotate[i] not in offspring1:
@@ -274,10 +275,10 @@ class Population:
                                              reverse=True))
         
         # Print the entire population
-        print("The entire population is:")
-        for chromo in self.entire_population:
-            print("{}\t{}".format(chromo.chromosome,
-                                  chromo.fitness))
+#        print("The entire population is:")
+#        for chromo in self.entire_population:
+#            print("{}\t{}".format(chromo.chromosome,
+#                                  chromo.fitness))
         
     
     def tournament_selection(self):
@@ -286,66 +287,91 @@ class Population:
         using a tournament selection algorithm.
         
         """
+        # Select a random chromosome form entire_population
         best = choice(self.entire_population)
         
-        #print("Best is:{} \t {}".format(best.chromosome, best.fitness))
-        
-        for i in range(Population.tournamnetSize):
+       # choose the best chromosome from the tournament
+        for i in range(Population.tournamnet_size):
+            
             cont = choice(self.entire_population)
-            #print("cont is:{} \t {}".format(cont.chromosome, cont.fitness))
+            
             if(cont.fitness > best.fitness):
                 best = cont
-        #print("Best is:{} \t {}".format(best.chromosome, best.fitness))
+        
+        # Return the selected chromosome
         return best 
     
-    def selectParents(self):
+    def select_parents(self):
         """
         A helper method used to select two parents from the population using a
         tournament selection algorithm
         """
-#        print("In select Parent")
+        # Return the two selected parents
         return (self.tournament_selection(), self.tournament_selection())
+    
     
     def evolve(self):
         """
         Method to evolve the population of chromosomes.
         """
-#        print("In Population evolve")
-        #len(self.entire_population)/2
-#        buf = sorted(self.entire_population[:8], key=lambda x: x.fitness)
-        old_population = self.entire_population[:len(self.entire_population)-self.num_offsprings]
-#        for i in range(len(old_population)):
-#            print("{}".format(old_population[i].chromosome))
+        # Store the population in old_population before evolving it.
+        # Exclude the tail of the population equal to the amount of number of
+        # offsprings to be generated
+        old_population = self.entire_population[:len(self.entire_population)\
+                                                    - self.num_offsprings]
         
         buf = []
         
+        # Iterate this loop until i less than or equal to the num_offspring/2
+        # Every iteration generates two offsprings
         i = 0
-        while i <  self.num_offsprings/2: #size:
-            if random() <= self.crossover:
-                (p1, p2) = self.selectParents()
-                print("P1 is:\n{}\t{}".format(p1.chromosome, p1.fitness))
-                print("P2 is:\n{}\t{}".format(p2.chromosome, p2.fitness))
-                offspring_crossover = p1.crossover_ord1(p2)
-                print("The off-springs are:")
-                for child in offspring_crossover:
-                    print("{}\t{}".format(child.chromosome, child.fitness))
-                for offspring in offspring_crossover:
-                    if random() <= self.mutation:
-                        mutated_offspring = offspring.mutate()
-                        buf.append(mutated_offspring)
-#                        print("Mutated offspring is:{}".format(mutated_offspring.chromosome))
-                    else:
-                        buf.append(offspring)
-        
-                i += 1
-        entire_population_temp = old_population + buf
-        self.entire_population = list(sorted(entire_population_temp[:], key=lambda x: x.fitness, reverse = True))
-        print("New Population")
-        for pop in self.entire_population:
-            print("{}\t{}".format(pop.chromosome, pop.fitness))
+        while i < self.num_offsprings/2:
             
+            # Generate a random number and check if it is less than the 
+            # probability of crossover
+            if random() <= self.crossover:
+                
+                # call select_parents(), it returns two parents
+                (parent1, parent2) = self.select_parents()
+                
+                # Call crossover_ord1 it returns a tuple of two offsprings 
+                # after applying the crossover operation
+                offspring_crossover = parent1.crossover_ord1(parent2)
+                
+                # Mutate the offsprings in offspring_crossover
+                for offspring in offspring_crossover:
+                    
+                    # Generate a random number and check if it is less than the 
+                    # probability of mutation
+                    if random() <= self.mutation:
+                        
+                        # Call mutate() to mutate the offspring
+                        mutated_offspring = offspring.mutate()
+                        
+                        # Append the mutated offspring to buf
+                        buf.append(mutated_offspring)
+
+                    else:
+                        
+                        # If the random number generated is greater then 
+                        # append to buf without mutation
+                        buf.append(offspring)
+
+                i += 1
+                
+        # Old Population and buf are combined to generate the new population
+        new_population = old_population + buf
         
-        pass
+        # Sort the new population based on the fitness of each chromosome and
+        # update the instance variable entire_population
+        self.entire_population = list(sorted(new_population[:],
+                                             key=lambda x: x.fitness,
+                                             reverse = True))
+#        # Print the new population
+#        print("New Population")
+#        for pop in self.entire_population:
+#            print("{}\t{}".format(pop.chromosome, pop.fitness))
+
 
 if __name__ == "__main__":
     
