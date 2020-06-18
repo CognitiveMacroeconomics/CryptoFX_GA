@@ -82,10 +82,10 @@ class Chromosomes:
             r1, r2 = r2, r1
     
             
-        child1 = [-1] * size
+        offspring1 = [-1] * size
         print("r1:{}\tr2:{}".format(r1,r2))
         for i in range(r1 ,r2+1):
-            child1[i] = p1[i]
+            offspring1[i] = p1[i]
             
         #print("child 1 is:{}".format(child1))
         
@@ -96,7 +96,7 @@ class Chromosomes:
         temp1 = [0] * (size-(r2-r1)-1) 
         j = 0
         for i in range(size):
-            if p2_rotate[i] not in child1:
+            if p2_rotate[i] not in offspring1:
                 temp1[j] = p2_rotate[i]
                 j += 1
             if j == len(temp1):
@@ -105,13 +105,13 @@ class Chromosomes:
         print("temp is:{}".format(temp1))
         for i in range(len(temp1)):
             idx = (r2 + i + 1) % size
-            child1[idx] = temp1[i]
+            offspring1[idx] = temp1[i]
             
-        print("Child1 is:{}".format(child1))
+        print("Offspring1 is:{}".format(offspring1))
         
-        child2 = [-1] * size
+        offspring2 = [-1] * size
         for i in range(r1, r2+1):
-            child2[i] = p2[i]
+            offspring2[i] = p2[i]
             
                 
         p1_rotate = p1[r2+1:]+p1[:r2+1]
@@ -119,7 +119,7 @@ class Chromosomes:
         temp2 = [0] * (size-(r2-r1)-1)
         j = 0
         for i in range(size):
-            if p1_rotate[i] not in child2:
+            if p1_rotate[i] not in offspring2:
                 temp2[j] = p1_rotate[i]
                 j += 1
             if j == len(temp2):
@@ -127,11 +127,11 @@ class Chromosomes:
                 
         for i in range(len(temp2)):
             idx = (r2 + i + 1) % size
-            child2[idx] = temp2[i]
+            offspring2[idx] = temp2[i]
             
-        print("Child2 is:{}".format(child2))
+        print("Offspring2 is:{}".format(offspring2))
         
-        return Chromosomes(child1), Chromosomes(child2)
+        return Chromosomes(offspring1), Chromosomes(offspring2)
     
     def mutate(self):
         """
@@ -143,16 +143,16 @@ class Chromosomes:
        
         genes = list(self.chromosome)
 #        print("Genes are:{}".format(genes))
-        new_gene = randint(0, Chromosomes.num_crypto - 1)
+
 #        print("New gene is:{}".format(new_gene))
         idx = randint(0, len(genes) - 1)
-#        print("The index is :{}".format(idx))
+        new_gene = randint(0, Chromosomes.num_crypto - 1)
+        while new_gene == genes[idx]:
+            new_gene = randint(0, Chromosomes.num_crypto - 1)
         genes[idx] = new_gene
 
         return Chromosomes(genes)
         
-        
-                
     
     @staticmethod
     def uptade_fitnesss(chromosome):
@@ -172,7 +172,7 @@ class Chromosomes:
         
         for key, value in Chromosomes.crypto_index.items():
             #print("{} :{}".format(key,value))
-            if value == Chromosomes.start_exchnage_currency:
+            if value == Chromosomes.start_exchange_currency:
                 start_ex_idx = key
                 
 #                print("{} is at {}".format(value, start_ex_idx))
@@ -191,12 +191,12 @@ class Chromosomes:
             value = 0
             #print("I is: {}".format(i))
             if i == 0:
-#                print("{} to {} is: {}".format(Chromosomes.start_exchnage_currency, Chromosomes.crypto_index[chromosome[i]],\
+#                print("{} to {} is: {}".format(Chromosomes.start_exchange_currency, Chromosomes.crypto_index[chromosome[i]],\
 #                                                  Chromosomes.exchange_rate_matrix[0][start_ex_idx][chromosome[i]]))
                 value = Chromosomes.exchange_rate_matrix[0][start_ex_idx][chromosome[i]]
                 
             elif i == len(chromosome):
-#                print("{} to {} is : {}".format(Chromosomes.crypto_index[chromosome[i-1]],Chromosomes.end_exchnage_currency,\
+#                print("{} to {} is : {}".format(Chromosomes.crypto_index[chromosome[i-1]],Chromosomes.end_exchange_currency,\
 #                                                  Chromosomes.exchange_rate_matrix[0][chromosome[i-1]][end_ex_idx]))
                 value = Chromosomes.exchange_rate_matrix[0][chromosome[i-1]][end_ex_idx]
                 
@@ -242,27 +242,45 @@ class Population:
     Note that this object is mutable, and calls to the evolve() method will 
     generate a new collection of chromosome objects.      
     """
-    _tournamnetSize = 3
-    _num_offsprings = 2
+    # The tournament size for parent selection
+    tournamnet_size = 0
     
-    def __init__(self, size=10, crossover=1, mutation=1):
+    # Number of offsprings to be generated
+    num_offsprings = 0
+    
+    def __init__(self, size=10, crossover=0.8, mutation=0.3):
+        """
+        Constructor for the class
+        initializes the probabbility of crossover and the probablility of 
+        mutation and the size of the population
+        """
+        
         self.crossover = crossover
         self.mutation = mutation
- 
+        self.size = size
+        
         buf = []
         
-        for i in range(size):
-            buf.append(Chromosomes.gen_random())
+        for i in range(self.size):
             
+            # Call gen_random() and append the randomly initialized chromosome 
+            # to the buf
+             buf.append(Chromosomes.gen_random())
             
-        self.entire_population = list(sorted(buf[:size], key=lambda x: x.fitness, reverse=True))
+        # Sort the chormosomes in buf based on their fitness, convert it into a
+        # list it to the instance variable entire_population
+        self.entire_population = list(sorted(buf[:size],
+                                             key=lambda x: x.fitness,
+                                             reverse=True))
         
+        # Print the entire population
         print("The entire population is:")
-        for single_chromosome in self.entire_population:
-            print("{}\t{}".format(single_chromosome.chromosome, single_chromosome.fitness))
+        for chromo in self.entire_population:
+            print("{}\t{}".format(chromo.chromosome,
+                                  chromo.fitness))
         
     
-    def _tournament_selection(self):
+    def tournament_selection(self):
         """
         A helper method used to select a random chromosome from the population
         using a tournament selection algorithm.
@@ -272,7 +290,7 @@ class Population:
         
         #print("Best is:{} \t {}".format(best.chromosome, best.fitness))
         
-        for i in range(Population._tournamnetSize):
+        for i in range(Population.tournamnetSize):
             cont = choice(self.entire_population)
             #print("cont is:{} \t {}".format(cont.chromosome, cont.fitness))
             if(cont.fitness > best.fitness):
@@ -280,13 +298,13 @@ class Population:
         #print("Best is:{} \t {}".format(best.chromosome, best.fitness))
         return best 
     
-    def _selectParents(self):
+    def selectParents(self):
         """
         A helper method used to select two parents from the population using a
         tournament selection algorithm
         """
 #        print("In select Parent")
-        return (self._tournament_selection(), self._tournament_selection())
+        return (self.tournament_selection(), self.tournament_selection())
     
     def evolve(self):
         """
@@ -295,16 +313,16 @@ class Population:
 #        print("In Population evolve")
         #len(self.entire_population)/2
 #        buf = sorted(self.entire_population[:8], key=lambda x: x.fitness)
-        old_population = self.entire_population[:len(self.entire_population)-self._num_offsprings]
+        old_population = self.entire_population[:len(self.entire_population)-self.num_offsprings]
 #        for i in range(len(old_population)):
 #            print("{}".format(old_population[i].chromosome))
         
         buf = []
         
         i = 0
-        while i <  self._num_offsprings/2: #size:
+        while i <  self.num_offsprings/2: #size:
             if random() <= self.crossover:
-                (p1, p2) = self._selectParents()
+                (p1, p2) = self.selectParents()
                 print("P1 is:\n{}\t{}".format(p1.chromosome, p1.fitness))
                 print("P2 is:\n{}\t{}".format(p2.chromosome, p2.fitness))
                 offspring_crossover = p1.crossover_ord1(p2)
@@ -331,20 +349,80 @@ class Population:
 
 if __name__ == "__main__":
     
-    """Pure Crypto: ADA
-                    ZEC
-    """
+    # Pure Crypto: 
+    #   Start Currency: ADA
+    #   End Currency: ZEC
+    #   Intermerdiate Currency: BTC
+    
+    # Stable Crypto:
+    #   Start Currency: 
+    #   End Currency: 
+    #   Intermerdiate Currency:       
+    
+    # Pure-Stable Crypto:
+    #   Start Currency: 
+    #   End Currency: 
+    #   Intermerdiate Currency:       
+    
+    # Set the Start Crypto Currency
     start_crypto_currency = "ADA"
+    
+    # Set the End Crypto Currency
     end_crypto_currency = "ZEC"
     
-    maxGenerations = 1
-    Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index = source.main(start_crypto_currency,end_crypto_currency)
+    # Set the Intermediate Crypto Currency
+    intermediate_currency = "BTC"
     
-    Chromosomes.chromosome_length = 15
+    # Set the number of generations to run the GA
+    max_generations = 1
+    
+    # Call main() from source.py to read the files an extarct the exchnage
+    # rates. 
+    # source.main() returns the exchange rate matrix and the the index of the
+    # crypto currencies. 
+    Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index = source.main(
+                                                    start_crypto_currency,
+                                                    end_crypto_currency,
+                                                    intermediate_currency)
+    # Set the length of the chromosome
+    Chromosomes.chromosome_length = 7
+    
+    # Set the num of crypto currencie:
+    # Pure Crypto: 34
+    # Stable Crypto: 
+    # Pure-Stable Crypto:
     Chromosomes.num_crypto = 34
+    
+    # Set the start exchange currency
+    Chromosomes.start_exchange_currency = "USD"
+    
+    # Set the end exchange currency
+    Chromosomes.end_exchange_currency = "USD"
+    
+    # Set the transaction cost:
+    # Transaction cost in {1, 5, 10, 15}
+    Chromosomes.transaction_cost = 1 * 0.05 # {1, 5, 10, 15}
+    
+    # Set the tournament size for parent selection
+    Population.tournamnet_size = 3
+    
+    # Set the number of offsprings to be generated
+    Population.num_offsprings = 2
+    
+    # Create the Population object
+    # Set the population size
+    # Set the probability of crossover
+    # Set the probability of mutation
     pop = Population(size = 8, crossover = 0.8, mutation = 0.3)
     
-    for i in range(1, maxGenerations + 1):
+    # Run the optimization procedure for max_generations number of generations
+    for i in range(1, max_generations + 1):
+        
         print("Generation: {}".format(i))
-        #print("{}\t{}".format(pop.entire_population[0].chromosome, pop.entire_population[0].fitness))
+        
+        # Print the top most chromosome in the population
+        print("{}\t{}".format(pop.entire_population[0].chromosome,
+                              pop.entire_population[0].fitness))
+        
+        # Start evolving the population
         pop.evolve()

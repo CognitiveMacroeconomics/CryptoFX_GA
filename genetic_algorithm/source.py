@@ -17,10 +17,9 @@ num_mins = 1
 # Name of the directory where the files are stored
 directory_name = "\pure_crypto"
 
-intermediate_currency = "BTC"
 
 
-def read_data(start_exchange_currency, end_exchange_currency):
+def read_data(start_exchange_currency, end_exchange_currency, intermediate_currency):
     """
     this function reads the files and stores the exchange rate in a 3-D
     matrix. The first dimensionality of the matrix stores the time by minute. 
@@ -168,22 +167,23 @@ def read_data(start_exchange_currency, end_exchange_currency):
     #Return the currency index list and the exchange rate 3-D matrix  
     return crypto_index, temp_matrix
 
-def main(start_exchange_currency, end_exchange_currency):
+def main(start_exchange_currency, end_exchange_currency, intermediate_currency):
     """
     A function that calls the read_data function.
     """
+    
     crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, 
-                                                   end_exchange_currency)
+                                                   end_exchange_currency, 
+                                                   intermediate_currency)
     return exchange_rate_matrix, crypto_index
 
 #if __name__ == "__main__":
 #    
 #    start_exchange_currency =  "ADA"
 #    end_exchange_currency = "ZEC"
+#    intermediate_currency = "BTC"
 #    
-##    exchange_rate_matrix, crypto_index = read_data(start_exchange_currency, 
-##                                              end_exchange_currency)
-#    crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, end_exchange_currency)
+#    crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, end_exchange_currency,intermediate_currency)
 #    
 #    writer = pd.ExcelWriter('pure_crypto_exchnages_temp.xlsx', engine='xlsxwriter')
 #    
