@@ -300,12 +300,15 @@ class Chromosomes:
         A convenience mehtod for generating a random chromosome with a random
         gene.
         """
-#        print("In gen random")
-        #print("Chromosome length is:{}".format(Chromosome.chromosome_length))
-        #print("Number of crypto currencies are:{}".format(Chromosome.num_crypto))
+
         chromosome = []
+        
+        # Generate random genes and append it to chromosome 
         while len(chromosome) < (Chromosomes.chromosome_length):
+            
             gene = randint(0, Chromosomes.num_crypto - 1)
+            
+            # Make sure that the gene is already not present in the chromosome
             if gene not in chromosome:
                 chromosome.append(gene)
                      
