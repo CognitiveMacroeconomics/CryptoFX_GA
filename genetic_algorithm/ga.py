@@ -6,7 +6,7 @@ Created on Fri Feb 21 09:45:03 2020
 """
 from random import randint, random, choice, sample
 import source
-
+import sys
 __all__ = ['Chromosomes','Population']
 
 
@@ -22,20 +22,34 @@ class Chromosomes:
     Note that this class is immutable. Calling mate() or mutate() will result 
     in a new chromosome instance being created.
     """
-
-    exchange_rate_matrix = 0
-    chromosome_length = 0
+    # The exchange rate matrix for fitness calculation
+    exchange_rate_matrix = []
+    
+    # Number of crypto currencies
     num_crypto = 0
+    
+    # Index of crypto currencies
     crypto_index = {}
+    
+    # Length of each chromosome 
+    chromosome_length = 0
+
+    # Start exchange currency
     start_exchnage_currency = "USD"
+    
+    # End exchange currency
     end_exchnage_currency = "USD"
+    
+    # The cost of transaction
     transaction_cost = 1 * 0.05 # {1, 5, 10, 15}
     
     def __init__(self, chromosome):
+        """
+        Constructor to initialize the chromosome and its fitness
+        """
 
-#        print("In init Chromosomes")
         self.chromosome = chromosome
-        self.fitness = Chromosomes.uptade_fitnesss(chromosome)
+        self.fitness = Chromosomes.calculate_fitnesss(chromosome)
         
     
     def crossover_onepoint(self, mate):
@@ -44,28 +58,54 @@ class Chromosomes:
         resulting in a new chromosome being returned.
         One Point Crossover
         """
+        
+        # Select a pivot point
         pivot = randint(0, len(self.chromosome) - 1)
-        chromosome1_temp = self.chromosome[:pivot] + mate.chromosome[pivot:]
-        chromosome1 = []
-        for i in range(len(chromosome1_temp)):
-            while chromosome1_temp.count(chromosome1_temp[i])>1 and i >= pivot:
-                print("Here1:{}".format(chromosome1_temp[i]))
-                gene = randint(0, Chromosomes.num_crypto - 1)
-                print("Changed to:{}".format(gene))
-                chromosome1_temp[i] = gene
-            chromosome1.append(chromosome1_temp[i])
+        
+        # Select genes from the first parent uptil the pivot and from the 
+        # second parent from the pivot till the end 
+        offspring1_temp = self.chromosome[:pivot] + mate.chromosome[pivot:]
+        
+        offspring1 = []
+        
+        # Iterate through offspring1_temp and remove duplicates after the pivot
+        for i in range(len(offspring1_temp)):
             
-        chromosome2_temp = mate.chromosome[:pivot] + self.chromosome[pivot:]
-        chromosome2 = []
-        for i in range(len(chromosome2_temp)):
-            while chromosome2_temp.count(chromosome2_temp[i])>1 and i >= pivot:
-                print("Here2:{}".format(chromosome2_temp[i]))
+            # While there are duplicates in genes after the pivot
+            while offspring1_temp.count(offspring1_temp[i])>1 and i >= pivot:
+                
+                # Generate a random gene
                 gene = randint(0, Chromosomes.num_crypto - 1)
-                print("Changed to:{}".format(gene))
-                chromosome2_temp[i] = gene
-            chromosome2.append(chromosome2_temp[i])
+                
+                # Remove the duplicate by updating it with the new gene
+                offspring1_temp[i] = gene
+                
+            # Append to offspring1
+            offspring1.append(offspring1_temp[i])
+        
+        # Select genes from the second parent uptil the pivot and from the 
+        # first parent from the pivot till the end
+        offspring2_temp = mate.chromosome[:pivot] + self.chromosome[pivot:]
+        
+        offspring2 = []
+        
+        # Iterate through offspring2_temp and remove duplicates after the pivot
+        for i in range(len(offspring2_temp)):
+            
+            # While there are duplicates in genes after the pivot
+            while offspring2_temp.count(offspring2_temp[i])>1 and i >= pivot:
+                
+                # Generate a random gene
+                gene = randint(0, Chromosomes.num_crypto - 1)
+                
+                # Remove the duplicate by updating it with the new gene    
+                offspring2_temp[i] = gene
+                
+            # Append to offspring2
+            offspring2.append(offspring2_temp[i])
 
-        return Chromosomes(chromosome1), Chromosomes(chromosome2)
+        return Chromosomes(offspring1), Chromosomes(offspring2)
+    
     
     def crossover_ord1(self, mate):
         """
@@ -73,140 +113,184 @@ class Chromosomes:
         resulting in a new chromosome being returned.
         Order One Crossover
         """
+        
+        # Set the first parent
         p1 = self.chromosome
+        
+        # Set the second parent
         p2 = mate.chromosome
         
+        # Get the length of the parent
         size = len(p1)
+        
+        # Generate 2 pivots as random numbers such that 0 < r1 < r2 < size-1
         r1, r2 = sample(range(size-1), 2)
         if r1 > r2:
             r1, r2 = r2, r1
 
-            
+        # Initialize offspring1 with -1, its length is the same as that of the 
+        # parent 
         offspring1 = [-1] * size
-        print("r1:{}\tr2:{}".format(r1,r2))
+        
+        # Copy the genes in parent1 between the two pivots to the same
+        # position(s) in offspring1
         for i in range(r1 ,r2+1):
             offspring1[i] = p1[i]
             
-        print("child 1 is:{}".format(offspring1))
-        
-        
+        # Rotate parent2 to the left by moving the gene after the pivot to the 
+        # begining of the list
         p2_rotate = p2[r2+1:]+p2[:r2+1]
-        print("P2 rotate is:{}".format(p2_rotate))
-        
+
+        # Set temp1 list to 0, the length of which is the number of elements 
+        # not lying between the pivot position        
         temp1 = [0] * (size-(r2-r1)-1) 
 
         j = 0
+        
+        # Add to temp1 genes from p2_rotate that are not in offsrping1
         for i in range(size):
+            
             if p2_rotate[i] not in offspring1:
                 temp1[j] = p2_rotate[i]
                 j += 1
+                
             if j == len(temp1):
                 break
-            
-        print("temp is:{}".format(temp1))
+        
+        # Add the genes from temp1 to offspring1 starting from the position
+        # after the second pivot and wrapping around offspring1
         for i in range(len(temp1)):
             idx = (r2 + i + 1) % size
             offspring1[idx] = temp1[i]
             
-        print("Offspring1 is:{}".format(offspring1))
         
+        # Initialize offspring2 with -1, its length is the same as that of the 
+        # parent         
         offspring2 = [-1] * size
+        
+        # Copy the genes in parent2 between the two pivots to the same
+        # position(s) in offspring2
         for i in range(r1, r2+1):
             offspring2[i] = p2[i]
             
-                
+        # Rotate parent1 to the left by moving the gene after the pivot to the 
+        # begining of the list        
         p1_rotate = p1[r2+1:]+p1[:r2+1]
         
+        # Set temp2 list to 0, the length of which is the number of elements 
+        # not lying between the pivot position
         temp2 = [0] * (size-(r2-r1)-1)
+        
         j = 0
+        
+        # Add to temp2 genes from p1_rotate that are not in offsrping2
         for i in range(size):
+            
             if p1_rotate[i] not in offspring2:
                 temp2[j] = p1_rotate[i]
                 j += 1
+            
             if j == len(temp2):
                 break
-                
+        
+        # Add the genes from temp1 to offspring1 starting from the position
+        # after the second pivot and wrapping around offspring1        
         for i in range(len(temp2)):
             idx = (r2 + i + 1) % size
             offspring2[idx] = temp2[i]
-            
-        print("Offspring2 is:{}".format(offspring2))
         
+        # Return the two offsprings as Chromosomes object
         return Chromosomes(offspring1), Chromosomes(offspring2)
     
     def mutate(self):
         """
         Method used to generate a new chromosome based on a change in a random
-        character in the geene of this chromosome. A new chormosome will be
-        created, but this original will not be affected.
+        character in the geene of this chromosome.
         """
-#        print("In mutation funtion")
-       
+
+        # Get the list of genes in the chromosome
         genes = list(self.chromosome)
-#        print("Genes are:{}".format(genes))
 
-#        print("New gene is:{}".format(new_gene))
+        # Select a random index
         idx = randint(0, len(genes) - 1)
+        
+        # Generate a random gene
         new_gene = randint(0, Chromosomes.num_crypto - 1)
-        while new_gene == genes[idx]:
+        
+        # While the new_gene is tha same as the gene at idx keep generating 
+        # new genes
+        while new_gene in genes:
             new_gene = randint(0, Chromosomes.num_crypto - 1)
+        
+        # Update the gene at idx to new_gene
         genes[idx] = new_gene
-
+                
         return Chromosomes(genes)
         
     
     @staticmethod
-    def uptade_fitnesss(chromosome):
+    def calculate_fitnesss(chromosome):
         """
         Helper method used to return the fitness for the chromosome based on
-        its gene.
+        its genes.
         """
         
-#        print("Chromosome is: {}".format(chromosome))
-        
-        #print("Excnahge rate matrix is:\n{}".format(Chromosome.exchange_rate_matrix))
-        
-        # key for key, value in dict.items() if value == 1
-        
-#        start_ex_idx = key for key, value in Chromosome.crypto_index.items() if value == "USD"
-#        end_ex_idx = key for key, value in Chromosome.crypto_index.items() if value == "USD"
-        
         for key, value in Chromosomes.crypto_index.items():
-            #print("{} :{}".format(key,value))
+            
+            # Get the index of the start_exchnage currency
             if value == Chromosomes.start_exchange_currency:
                 start_ex_idx = key
                 
-#                print("{} is at {}".format(value, start_ex_idx))
-                
+            # Get the index of the end_exchnage currency    
             if value == Chromosomes.end_exchnage_currency:
                 end_ex_idx = key
-#                print("{} is at {}".format(value, end_ex_idx))
-                
+                   
+        cost = 1
         
-        fitness = 1
-        
+        # Iterate over the chromosome and get the exchange rate values from the
+        # exchange_rate_matrix
+        # E.g. USD -> BTC -> ZEC -> ETH -> USD
         for i in range(len(chromosome)+1):
             
-#            if(i != len(gene)):
-#                print("{}\t{}".format(gene[i], Chromosome.crypto_index[gene[i]]))
             value = 0
-            #print("I is: {}".format(i))
+
             if i == 0:
-#                print("{} to {} is: {}".format(Chromosomes.start_exchange_currency, Chromosomes.crypto_index[chromosome[i]],\
-#                                                  Chromosomes.exchange_rate_matrix[0][start_ex_idx][chromosome[i]]))
-                value = Chromosomes.exchange_rate_matrix[0][start_ex_idx][chromosome[i]]
+                
+#                print("{} to {} is: {}".format(Chromosomes\
+#                                  .start_exchange_currency,\
+#                                  Chromosomes.crypto_index[chromosome[i]],\
+#                                  Chromosomes.exchange_rate_matrix[0]\
+#                                  [start_ex_idx][chromosome[i]]))
+                
+                value = Chromosomes.exchange_rate_matrix[0]\
+                                    [start_ex_idx][chromosome[i]]
                 
             elif i == len(chromosome):
-#                print("{} to {} is : {}".format(Chromosomes.crypto_index[chromosome[i-1]],Chromosomes.end_exchange_currency,\
-#                                                  Chromosomes.exchange_rate_matrix[0][chromosome[i-1]][end_ex_idx]))
-                value = Chromosomes.exchange_rate_matrix[0][chromosome[i-1]][end_ex_idx]
+                
+#                print("{} to {} is : {}".format(Chromosomes
+#                                      .crypto_index[chromosome[i-1]],\
+#                                      Chromosomes.end_exchange_currency,\
+#                                      Chromosomes.exchange_rate_matrix[0]\
+#                                      [chromosome[i-1]][end_ex_idx]))
+                
+                value = Chromosomes.exchange_rate_matrix[0]\
+                                    [chromosome[i-1]][end_ex_idx]
                 
             else:
-#                 print("{} to {} is : {}".format(Chromosomes.crypto_index[chromosome[i-1]],Chromosomes.crypto_index[chromosome[i]],\
-#                                                   Chromosomes.exchange_rate_matrix[0][chromosome[i-1]][chromosome[i]]))
-                 value = Chromosomes.exchange_rate_matrix[0][chromosome[i-1]][chromosome[i]]
-                                  
-            fitness *= ((value) - (value * Chromosomes.transaction_cost))
+                
+#                 print("{} to {} is : {}".format(Chromosomes\
+#                                      .crypto_index[chromosome[i-1]],\
+#                                     Chromosomes.crypto_index[chromosome[i]],\
+#                                     Chromosomes.exchange_rate_matrix[0]\
+#                                     [chromosome[i-1]][chromosome[i]]))
+                 
+                 value = Chromosomes.exchange_rate_matrix[0]\
+                                     [chromosome[i-1]][chromosome[i]]
+            
+            # Calculate fitness                       
+            cost *= ((value) - (value * Chromosomes.transaction_cost))
+            
+        fitness = cost #max(cost - 1, 0 )
 
         return fitness
     
@@ -224,9 +308,7 @@ class Chromosomes:
             gene = randint(0, Chromosomes.num_crypto - 1)
             if gene not in chromosome:
                 chromosome.append(gene)
-            
-        #print("The gene is:{}".format(gene))
-        
+                     
         return Chromosomes(chromosome)
     
     
@@ -251,9 +333,8 @@ class Population:
     
     def __init__(self, size=10, crossover=0.8, mutation=0.3):
         """
-        Constructor for the class
-        initializes the probabbility of crossover and the probablility of 
-        mutation and the size of the population
+        Constructor to initializes the probabbility of crossover and the
+        probablility of mutation and the size of the population
         """
         
         self.crossover = crossover
@@ -400,7 +481,7 @@ if __name__ == "__main__":
     intermediate_currency = "BTC"
     
     # Set the number of generations to run the GA
-    max_generations = 1
+    max_generations = 1000
     
     # Call main() from source.py to read the files an extarct the exchnage
     # rates. 
@@ -411,7 +492,7 @@ if __name__ == "__main__":
                                                     end_crypto_currency,
                                                     intermediate_currency)
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 7
+    Chromosomes.chromosome_length = 5
     
     # Set the num of crypto currencie:
     # Pure Crypto: 34
@@ -430,16 +511,16 @@ if __name__ == "__main__":
     Chromosomes.transaction_cost = 1 * 0.05 # {1, 5, 10, 15}
     
     # Set the tournament size for parent selection
-    Population.tournamnet_size = 3
+    Population.tournamnet_size = 50
     
     # Set the number of offsprings to be generated
-    Population.num_offsprings = 2
+    Population.num_offsprings = 500
     
     # Create the Population object
     # Set the population size
     # Set the probability of crossover
     # Set the probability of mutation
-    pop = Population(size = 8, crossover = 0.8, mutation = 0.3)
+    pop = Population(size = 1000, crossover = 0.8, mutation = 0.7)
     
     # Run the optimization procedure for max_generations number of generations
     for i in range(1, max_generations + 1):
