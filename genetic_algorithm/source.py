@@ -10,16 +10,16 @@ import os
 import numpy as np
 import pandas as pd
 #import xlsxwriter
+from datetime import datetime
+from datetime import timedelta
 
-# Global variables
-num_mins = 1
 
 # Name of the directory where the files are stored
 directory_name = "\pure_crypto"
 
 
 
-def read_data(start_exchange_currency, end_exchange_currency, intermediate_currency):
+def read_data(start_exchange_currency, end_exchange_currency, intermediate_currency, minute):
     """
     this function reads the files and stores the exchange rate in a 3-D
     matrix. The first dimensionality of the matrix stores the time by minute. 
@@ -35,7 +35,7 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
     the matrix will be [time] X [number of crypto] X [number of crypto]
     """
     
-    print("In read data")
+    print("Reading data")
     
     # Get the name of all the files in the directory
     data_files =  os.scandir(".\data"+directory_name)
@@ -87,11 +87,12 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
     num_rows = num_columns = len(crypto_dict) 
     
     # initialize them temp_matrix to 0    
-    temp_matrix = np.zeros((num_mins, num_rows, num_columns))
+    temp_matrix = np.zeros((num_rows, num_columns))
         
     # Get the exchange rates of the crypto-currencies and store them in the 
     # 3-D matrix
-    count = 0
+#    count = 0
+
     for file in [entry for entry in data_files_list if entry != ".gitkeep"]:
          #print(file)   
         # Read the csv file and store it in the data frame "data_df"
@@ -110,9 +111,10 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
 #
 #        index_range = -np.sort(-(np.arange(end_index-1, start_index)))
         
-        start_index = 0
-        end_index = num_mins
-        index_range = np.arange(start_index, end_index)
+#        start_index = 0
+#        end_index = num_mins
+#        index_range = np.arange(start_index, end_index)
+        index = minute - 1
         #index_range = -np.sort(-(np.arange(start_index, end_index)))        
 
         """ Get the names of the crypto-currencies
@@ -129,36 +131,33 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
         # The depth of the matrix depends on the number of minutes we want to
         # extract the exchange rates for
        
-        time = 0
-        for i in index_range:
-            temp_matrix[time][row_num][column_num] = data_df.loc[i][1]
-            
-            if(data_df.loc[i][1] != 0):
-                temp_matrix[time][column_num][row_num] = 1 / data_df.loc[i][1]
-            else:
-                temp_matrix[time][column_num][row_num] = data_df.loc[i][1] # 0
-            time += 1
+
+        temp_matrix[row_num][column_num] = data_df.loc[index][1]
+        
+        if(data_df.loc[index][1] != 0):
+            temp_matrix[column_num][row_num] = 1 / data_df.loc[index][1]
+        else:
+            temp_matrix[column_num][row_num] = data_df.loc[index][1] # 0
+        
         
 #        count += 1
 #        if count == 1:
 #            break
-            
-    
-    for time in range(num_mins):
-        for j in range(0, num_rows):
-            temp_matrix[time][j][j] = 1
+                
+    for j in range(0, num_rows):
+        temp_matrix[j][j] = 1
             
     intrd_currency_index = crypto_dict[intermediate_currency]
     print("Intermediate currency is: {} at index {}".format(intermediate_currency, intrd_currency_index))     
     
-    for time in range(num_mins):
-        for j in range(0, num_rows):
-            for k in range(0, num_columns):
-                if j!=intrd_currency_index:
-                    if k!=intrd_currency_index:
-                        if(temp_matrix[time][j][k] == 0):
-                            #temp_matrix[time][j][k] = -1
-                            temp_matrix[time][j][k] = temp_matrix[time][j][intrd_currency_index] * temp_matrix[time][intrd_currency_index][k]
+
+    for j in range(0, num_rows):
+        for k in range(0, num_columns):
+            if j!=intrd_currency_index:
+                if k!=intrd_currency_index:
+                    if(temp_matrix[j][k] == 0):
+                        #temp_matrix[j][k] = -1
+                        temp_matrix[j][k] = temp_matrix[j][intrd_currency_index] * temp_matrix[intrd_currency_index][k]
                 
     # reverse the dictionary            
     crypto_index = {value : key for (key, value) in crypto_dict.items()}
@@ -167,29 +166,46 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
     #Return the currency index list and the exchange rate 3-D matrix  
     return crypto_index, temp_matrix
 
-def main(start_exchange_currency, end_exchange_currency, intermediate_currency):
+def main(start_exchange_currency, end_exchange_currency, intermediate_currency, minute):
     """
     A function that calls the read_data function.
     """
     
     crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, 
                                                    end_exchange_currency, 
-                                                   intermediate_currency)
+                                                   intermediate_currency, 
+                                                   minute)
     return exchange_rate_matrix, crypto_index
 
-#if __name__ == "__main__":
-#    
-#    start_exchange_currency =  "ADA"
-#    end_exchange_currency = "ZEC"
-#    intermediate_currency = "BTC"
-#    
-#    crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, end_exchange_currency,intermediate_currency)
-#    
-#    writer = pd.ExcelWriter('pure_crypto_exchnages_temp.xlsx', engine='xlsxwriter')
-#    
-#    for i in range(exchange_rate_matrix.shape[0]):
-#        df = pd.DataFrame(exchange_rate_matrix[i])
-#        df.to_excel(writer, sheet_name= 'Time_'+str(i))
-#     
-#    writer.save()
+if __name__ == "__main__":
+    
+    start_exchange_currency =  "ADA"
+    end_exchange_currency = "ZEC"
+    intermediate_currency = "BTC"
+    
+#    num_min = 2 # 131040
+    start_min = 1
+    end_min = 1 # 131040
+    
+    minute = start_min
+    while minute <= end_min:
+        crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, 
+                                                       end_exchange_currency, 
+                                                       intermediate_currency, 
+                                                       minute)
+    
+        # get current date time
+        now = datetime.now()
+        dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+
+    
+        writer = pd.ExcelWriter('pure_crypto_exchnages_' + dt_string + '.xlsx', engine='xlsxwriter')
+    
+        
+        df = pd.DataFrame(exchange_rate_matrix)
+        df.to_excel(writer, sheet_name= 'Time_'+str(minute))
+     
+        writer.save()
+        
+        minute += 1
     

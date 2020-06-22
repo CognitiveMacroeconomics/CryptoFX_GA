@@ -6,7 +6,7 @@ Created on Fri Feb 21 09:45:03 2020
 """
 from random import randint, random, choice, sample
 import source
-import sys
+#import sys
 __all__ = ['Chromosomes','Population']
 
 
@@ -242,7 +242,7 @@ class Chromosomes:
                 start_ex_idx = key
                 
             # Get the index of the end_exchnage currency    
-            if value == Chromosomes.end_exchnage_currency:
+            if value == Chromosomes.end_exchange_currency:
                 end_ex_idx = key
                    
         cost = 1
@@ -259,38 +259,38 @@ class Chromosomes:
 #                print("{} to {} is: {}".format(Chromosomes\
 #                                  .start_exchange_currency,\
 #                                  Chromosomes.crypto_index[chromosome[i]],\
-#                                  Chromosomes.exchange_rate_matrix[0]\
+#                                  Chromosomes.exchange_rate_matrix\
 #                                  [start_ex_idx][chromosome[i]]))
                 
-                value = Chromosomes.exchange_rate_matrix[0]\
-                                    [start_ex_idx][chromosome[i]]
+                value = Chromosomes.exchange_rate_matrix[start_ex_idx]\
+                                                        [chromosome[i]]
                 
             elif i == len(chromosome):
                 
 #                print("{} to {} is : {}".format(Chromosomes
 #                                      .crypto_index[chromosome[i-1]],\
 #                                      Chromosomes.end_exchange_currency,\
-#                                      Chromosomes.exchange_rate_matrix[0]\
+#                                      Chromosomes.exchange_rate_matrix\
 #                                      [chromosome[i-1]][end_ex_idx]))
                 
-                value = Chromosomes.exchange_rate_matrix[0]\
-                                    [chromosome[i-1]][end_ex_idx]
+                value = Chromosomes.exchange_rate_matrix[chromosome[i-1]]\
+                                                        [end_ex_idx]
                 
             else:
                 
 #                 print("{} to {} is : {}".format(Chromosomes\
 #                                      .crypto_index[chromosome[i-1]],\
 #                                     Chromosomes.crypto_index[chromosome[i]],\
-#                                     Chromosomes.exchange_rate_matrix[0]\
+#                                     Chromosomes.exchange_rate_matrix\
 #                                     [chromosome[i-1]][chromosome[i]]))
                  
-                 value = Chromosomes.exchange_rate_matrix[0]\
-                                     [chromosome[i-1]][chromosome[i]]
+                 value = Chromosomes.exchange_rate_matrix[chromosome[i-1]]\
+                                                         [chromosome[i]]
             
             # Calculate fitness                       
             cost *= ((value) - (value * Chromosomes.transaction_cost))
             
-        fitness = cost #max(cost - 1, 0 )
+        fitness = max(cost - 1, 0) # cost, max(cost - 1, 0)
 
         return fitness
     
@@ -483,17 +483,12 @@ if __name__ == "__main__":
     # Set the Intermediate Crypto Currency
     intermediate_currency = "BTC"
     
-    # Set the number of generations to run the GA
-    max_generations = 1000
+    start_min = 1
+    end_min = 4 # integer between [1, 131040]
     
-    # Call main() from source.py to read the files an extarct the exchnage
-    # rates. 
-    # source.main() returns the exchange rate matrix and the the index of the
-    # crypto currencies. 
-    Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index = source.main(
-                                                    start_crypto_currency,
-                                                    end_crypto_currency,
-                                                    intermediate_currency)
+    # Set the number of generations to run the GA
+    max_generations = 1
+    
     # Set the length of the chromosome
     Chromosomes.chromosome_length = 5
     
@@ -517,22 +512,41 @@ if __name__ == "__main__":
     Population.tournamnet_size = 50
     
     # Set the number of offsprings to be generated
-    Population.num_offsprings = 500
+    Population.num_offsprings = 50
     
-    # Create the Population object
-    # Set the population size
-    # Set the probability of crossover
-    # Set the probability of mutation
-    pop = Population(size = 1000, crossover = 0.8, mutation = 0.7)
+   
+    minute = start_min
     
-    # Run the optimization procedure for max_generations number of generations
-    for i in range(1, max_generations + 1):
+    while minute <= end_min:
         
-        print("Generation: {}".format(i))
-        
-        # Print the top most chromosome in the population
-        print("{}\t{}".format(pop.entire_population[0].chromosome,
-                              pop.entire_population[0].fitness))
-        
-        # Start evolving the population
-        pop.evolve()
+        print("Optimizing for minute: {}".format(minute))
+        # Call main() from source.py to read the files an extarct the exchnage
+        # rates. 
+        # source.main() returns the exchange rate matrix and the the index of the
+        # crypto currencies. 
+        Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index =\
+                                                    source.main(\
+                                                    start_crypto_currency,
+                                                    end_crypto_currency,
+                                                    intermediate_currency,
+                                                    minute)
+                                                    
+        # Create the Population object
+        # Set the population size
+        # Set the probability of crossover
+        # Set the probability of mutation
+        pop = Population(size = 100, crossover = 0.8, mutation = 0.3)
+    
+        # Run the optimization procedure for max_generations number of generations
+        for i in range(1, max_generations + 1):
+            
+            print("Generation: {}".format(i))
+            
+            # Print the top most chromosome in the population
+            print("{}\t{}".format(pop.entire_population[0].chromosome,
+                                  pop.entire_population[0].fitness))
+            
+            # Start evolving the population
+            pop.evolve()
+            
+            minute += 1
