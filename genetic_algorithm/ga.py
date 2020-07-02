@@ -6,9 +6,16 @@ Created on Fri Feb 21 09:45:03 2020
 """
 from random import randint, random, choice, sample
 import source
+from datetime import datetime
 #import sys
 __all__ = ['Chromosomes','Population']
 
+# Get current date time
+now = datetime.now()
+dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+
+# a file to write the output logs
+f = open('./log/log'+dt_string+".txt", 'w')
 
 class Chromosomes:
     """
@@ -39,10 +46,7 @@ class Chromosomes:
     
     # End exchange currency
     end_exchnage_currency = "USD"
-    
-    # The cost of transaction
-    transaction_cost = 1 * 0.05 # {1, 5, 10, 15}
-    
+        
     def __init__(self, chromosome):
         """
         Constructor to initialize the chromosome and its fitness
@@ -217,11 +221,20 @@ class Chromosomes:
         # Generate a random gene
         new_gene = randint(0, Chromosomes.num_crypto - 1)
         
-        # While the new_gene is tha same as the gene at idx keep generating 
-        # new genes
-        while new_gene in genes:
-            new_gene = randint(0, Chromosomes.num_crypto - 1)
+        for key, value in Chromosomes.crypto_index.items():
+            # Get the index of the start_exchnage currency
+            if value == Chromosomes.start_exchange_currency:
+                start_ex_idx = key
+                
+            # Get the index of the end_exchnage currency    
+            if value == Chromosomes.end_exchange_currency:
+                end_ex_idx = key
         
+        # While the new_gene is tha same as the gene at idx and same as the
+        # start and end currency keep generating new genes
+        while (new_gene in genes) or (new_gene in [start_ex_idx, end_ex_idx]):\
+            new_gene = randint(0, Chromosomes.num_crypto - 1)
+                
         # Update the gene at idx to new_gene
         genes[idx] = new_gene
                 
@@ -288,7 +301,7 @@ class Chromosomes:
                                                          [chromosome[i]]
             
             # Calculate fitness                       
-            cost *= ((value) - (value * Chromosomes.transaction_cost))
+            cost *= value
             
         fitness = max(cost - 1, 0) # cost, max(cost - 1, 0)
 
@@ -303,13 +316,23 @@ class Chromosomes:
 
         chromosome = []
         
+        for key, value in Chromosomes.crypto_index.items():
+            # Get the index of the start_exchnage currency
+            if value == Chromosomes.start_exchange_currency:
+                start_ex_idx = key
+                
+            # Get the index of the end_exchnage currency    
+            if value == Chromosomes.end_exchange_currency:
+                end_ex_idx = key
+        
         # Generate random genes and append it to chromosome 
         while len(chromosome) < (Chromosomes.chromosome_length):
             
             gene = randint(0, Chromosomes.num_crypto - 1)
             
             # Make sure that the gene is already not present in the chromosome
-            if gene not in chromosome:
+            if (gene not in chromosome)\
+                and (gene != start_ex_idx and gene != end_ex_idx):
                 chromosome.append(gene)
                      
         return Chromosomes(chromosome)
@@ -451,7 +474,7 @@ class Population:
         self.entire_population = list(sorted(new_population[:],
                                              key=lambda x: x.fitness,
                                              reverse = True))
-#        # Print the new population
+        # Print the new population
 #        print("New Population")
 #        for pop in self.entire_population:
 #            print("{}\t{}".format(pop.chromosome, pop.fitness))
@@ -460,37 +483,31 @@ class Population:
 if __name__ == "__main__":
     
     # Pure Crypto: 
-    #   Start Currency: ADA
-    #   End Currency: ZEC
-    #   Intermerdiate Currency: BTC
+    #   Intermerdiate Currency: BTC, ETH, BCH
     
     # Stable Crypto:
-    #   Start Currency: 
-    #   End Currency: 
     #   Intermerdiate Currency:       
     
     # Pure-Stable Crypto:
-    #   Start Currency: 
-    #   End Currency: 
     #   Intermerdiate Currency:       
     
-    # Set the Start Crypto Currency
-    start_crypto_currency = "ADA"
-    
-    # Set the End Crypto Currency
-    end_crypto_currency = "ZEC"
+    # Name of the directory where the files are stored
+    directory_name = "\pure_crypto"
     
     # Set the Intermediate Crypto Currency
     intermediate_currency = "BTC"
     
+    # Set the transaction cost
+    transaction_cost =  0.04 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
+    
     start_min = 1
-    end_min = 4 # integer between [1, 131040]
+    end_min = 1 # integer between [1, 131040]
     
     # Set the number of generations to run the GA
-    max_generations = 1
+    max_generations = 400
     
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 5
+    Chromosomes.chromosome_length = 7
     
     # Set the num of crypto currencie:
     # Pure Crypto: 34
@@ -504,17 +521,13 @@ if __name__ == "__main__":
     # Set the end exchange currency
     Chromosomes.end_exchange_currency = "USD"
     
-    # Set the transaction cost:
-    # Transaction cost in {1, 5, 10, 15}
-    Chromosomes.transaction_cost = 1 * 0.05 # {1, 5, 10, 15}
     
     # Set the tournament size for parent selection
-    Population.tournamnet_size = 50
+    Population.tournamnet_size = 5
     
     # Set the number of offsprings to be generated
-    Population.num_offsprings = 50
+    Population.num_offsprings = 100
     
-   
     minute = start_min
     
     while minute <= end_min:
@@ -525,17 +538,16 @@ if __name__ == "__main__":
         # source.main() returns the exchange rate matrix and the the index of the
         # crypto currencies. 
         Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index =\
-                                                    source.main(\
-                                                    start_crypto_currency,
-                                                    end_crypto_currency,
+                                                    source.main(directory_name,
                                                     intermediate_currency,
-                                                    minute)
+                                                    minute,
+                                                    transaction_cost)
                                                     
         # Create the Population object
         # Set the population size
         # Set the probability of crossover
         # Set the probability of mutation
-        pop = Population(size = 100, crossover = 0.8, mutation = 0.3)
+        pop = Population(size = 200, crossover = 0.8, mutation = 0.3)
     
         # Run the optimization procedure for max_generations number of generations
         for i in range(1, max_generations + 1):
@@ -549,4 +561,12 @@ if __name__ == "__main__":
             # Start evolving the population
             pop.evolve()
             
-            minute += 1
+        f.write("{}|".format(minute))
+        for j in (pop.entire_population[0].chromosome):
+            f.write("{} ".format(j))
+        f.write("|{}\n".format(pop.entire_population[0].fitness))
+        
+           
+        minute += 1
+
+    f.close()

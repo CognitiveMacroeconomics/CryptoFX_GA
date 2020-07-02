@@ -6,33 +6,27 @@ Created on Tue Feb 18 10:14:33 2020
 """
 
 import os
-#import re
 import numpy as np
 import pandas as pd
-#import xlsxwriter
 from datetime import datetime
-from datetime import timedelta
 
 
-# Name of the directory where the files are stored
-directory_name = "\pure_crypto"
-
-
-
-def read_data(start_exchange_currency, end_exchange_currency, intermediate_currency, minute):
+def read_data(directory_name, intermediate_currency, minute, transaction_cost):
     """
-    this function reads the files and stores the exchange rate in a 3-D
-    matrix. The first dimensionality of the matrix stores the time by minute. 
-    The second and third dimensionality of the matrix stores the exchange rates
-    The second dimensionality is the "from" cryptocurrency. The third 
+    This function reads the files and stores the exchange rate in a 2-D
+    matrix. The first dimensionality is the "from" cryptocurrency. The second 
     dimensionality is the "to" currency.
     
     It takes in as parametes:
-        - start_exchange_currency : The value of the starting currency
-        - end_exchange_currency : The value of the ending currency
-    
-    E.g. If we want to extract exchange rates for 10 minutes then the shape of
-    the matrix will be [time] X [number of crypto] X [number of crypto]
+        - directory_names : the name of the directory where all the exchange
+            rate files are stored
+        - intermediate_currency : The intermediate currency used to fill the
+            cells of the matrix that dont have any data
+        - minute : The minute for which the exchange rates are needed for
+        - transaction_cost: The transaction cost incurred for each exchange
+        
+    It returns the exchnage rate matrix and the index of the crypto currencies
+    in the matrix.
     """
     
     print("Reading data")
@@ -45,77 +39,47 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
     
     # A dictonary to store the index values of the crypto-currencies
     crypto_dict = {}
-    
-    # The starting crypo-currency is indexed as 0
-    crypto_dict[start_exchange_currency] = 0
-    
-    index = 1
+       
+    idx = 0
     
     for file in [entry for entry in data_files if entry.name != ".gitkeep"]:
                 
         # Append the name of all the file in "data_files_list"
         data_files_list.append(file.name)
-       
-        #print(file.name.replace(".csv","_").split("_"))
-        
-        # Stores the crypto names in two variables        
+               
+        # Store the crypto names in two variables        
         crypto_1, crypto_2, _ = file.name.replace(".csv","_").split("_")
-        #print("{}\t{}".format(crypto_1,crypto_2))
 
         # Populate the "crypto_dict" to store the index of the 
         # crypto-currencies
-        if (crypto_1 not in crypto_dict and crypto_1 != start_exchange_currency
-            and crypto_1 != end_exchange_currency):
+        if (crypto_1 not in crypto_dict):
             
-            crypto_dict[crypto_1] = index
-            index += 1
+            crypto_dict[crypto_1] = idx
+            idx += 1
             
-        if (crypto_2 not in crypto_dict and crypto_2 != start_exchange_currency
-            and crypto_2 != end_exchange_currency):
+        if (crypto_2 not in crypto_dict):
             
-            crypto_dict[crypto_2] = index
-            index += 1
-            
-    
-    #print(data_files_list)
-    
-    # The ending crypto-currency is indexed as the last one
-    crypto_dict[end_exchange_currency] = len(crypto_dict)
-
+            crypto_dict[crypto_2] = idx
+            idx += 1
+               
     # The exchange-rate matrix is the an nXn matrix
     # where n = number of crypto-currency
     num_rows = num_columns = len(crypto_dict) 
     
-    # initialize them temp_matrix to 0    
+    # Initialize the temp_matrix to 0    
     temp_matrix = np.zeros((num_rows, num_columns))
         
     # Get the exchange rates of the crypto-currencies and store them in the 
-    # 3-D matrix
-#    count = 0
+    # a matrix
 
     for file in [entry for entry in data_files_list if entry != ".gitkeep"]:
-         #print(file)   
+        
         # Read the csv file and store it in the data frame "data_df"
+        # column 0 stores "time" and column 1 store "open"
         data_df = pd.read_csv(".\data"+directory_name+"\\"+file, 
                               usecols = [0,1])
 
-        
-        #print("File name is: {}".format(file))
-
-#        # Get the exchange rates by minutes.
-#        start_index = data_df.shape[0]
-#        end_index = data_df.shape[0] - num_mins + 1
-#        
-#        print("End index is:{}".format(end_index))
-#        
-#
-#        index_range = -np.sort(-(np.arange(end_index-1, start_index)))
-        
-#        start_index = 0
-#        end_index = num_mins
-#        index_range = np.arange(start_index, end_index)
         index = minute - 1
-        #index_range = -np.sort(-(np.arange(start_index, end_index)))        
 
         """ Get the names of the crypto-currencies
          "crypto_1" stores "from" currency which will be the row value of the
@@ -127,37 +91,49 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
         row_num = crypto_dict[crypto_1]
         column_num = crypto_dict[crypto_2]
         
-         
-        # The depth of the matrix depends on the number of minutes we want to
-        # extract the exchange rates for
-       
-
-        temp_matrix[row_num][column_num] = data_df.loc[index][1]
+        # Fill the cell of the matrix with exchange data and apply the
+        # transaction cost
+        value = data_df.loc[index][1]
+        temp_matrix[row_num][column_num] = (value - (value * transaction_cost))
         
+        # Interchange the column_num and row_um of the matrix and fill the cell
+        # with the reciprocal of the exchnage rate after applying trasaction 
+        # cost
         if(data_df.loc[index][1] != 0):
-            temp_matrix[column_num][row_num] = 1 / data_df.loc[index][1]
+            value = 1 / data_df.loc[index][1]
+            temp_matrix[column_num][row_num] = (value - (value * transaction_cost))
+        # If the exchnage rate if 0 then the cell with the inverted row_num and
+        # column_num will also have the exchange rate as 0
         else:
             temp_matrix[column_num][row_num] = data_df.loc[index][1] # 0
         
-        
-#        count += 1
-#        if count == 1:
-#            break
-                
+    # The exchange rate between the same crypto currency will be 1    
     for j in range(0, num_rows):
         temp_matrix[j][j] = 1
-            
-    intrd_currency_index = crypto_dict[intermediate_currency]
-    print("Intermediate currency is: {} at index {}".format(intermediate_currency, intrd_currency_index))     
     
-
+    # An intermediate currency is applied for exchnage paris which do not have
+    # direct exchange rate data       
+    intrd_currency_index = crypto_dict[intermediate_currency]
+    #print("Intermediate currency is: {} at index {}".format(intermediate_currency, intrd_currency_index))     
+    
     for j in range(0, num_rows):
         for k in range(0, num_columns):
             if j!=intrd_currency_index:
                 if k!=intrd_currency_index:
                     if(temp_matrix[j][k] == 0):
+                        
                         #temp_matrix[j][k] = -1
-                        temp_matrix[j][k] = temp_matrix[j][intrd_currency_index] * temp_matrix[intrd_currency_index][k]
+                        
+                        value1 = temp_matrix[j][intrd_currency_index]
+                        # Applying the transaction cost
+                        value2 = (value1 - (value1 * transaction_cost))
+                        
+                        value3 = temp_matrix[intrd_currency_index][k]
+                        
+                        # Applying the transaction cost
+                        value4 = (value3 - (value3 * transaction_cost))
+                        
+                        temp_matrix[j][k] = value2 * value4
                 
     # reverse the dictionary            
     crypto_index = {value : key for (key, value) in crypto_dict.items()}
@@ -166,22 +142,25 @@ def read_data(start_exchange_currency, end_exchange_currency, intermediate_curre
     #Return the currency index list and the exchange rate 3-D matrix  
     return crypto_index, temp_matrix
 
-def main(start_exchange_currency, end_exchange_currency, intermediate_currency, minute):
+def main(directory_name, intermediate_currency, minute, transaction_cost):
     """
     A function that calls the read_data function.
     """
     
-    crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, 
-                                                   end_exchange_currency, 
+    crypto_index, exchange_rate_matrix = read_data(directory_name,
                                                    intermediate_currency, 
-                                                   minute)
+                                                   minute,
+                                                   transaction_cost)
     return exchange_rate_matrix, crypto_index
 
 if __name__ == "__main__":
     
-    start_exchange_currency =  "ADA"
-    end_exchange_currency = "ZEC"
+    # Name of the directory where the files are stored
+    directory_name = "\pure_crypto"
+    
     intermediate_currency = "BTC"
+    
+    transaction_cost =  0.2  # values in {0.04, 0.2, 0.5, 5.9}
     
 #    num_min = 2 # 131040
     start_min = 1
@@ -189,10 +168,10 @@ if __name__ == "__main__":
     
     minute = start_min
     while minute <= end_min:
-        crypto_index, exchange_rate_matrix = read_data(start_exchange_currency, 
-                                                       end_exchange_currency, 
+        crypto_index, exchange_rate_matrix = read_data(directory_name, 
                                                        intermediate_currency, 
-                                                       minute)
+                                                       minute,
+                                                       transaction_cost)
     
         # get current date time
         now = datetime.now()

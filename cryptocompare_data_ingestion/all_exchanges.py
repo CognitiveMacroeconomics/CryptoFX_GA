@@ -139,5 +139,5 @@ for item in data_matrix:
 # convert data_matrix into a pandas dataframe
 excall_df = pd.DataFrame(data_matrix , columns=["Exchange", "From", "To", 
                                                 "Start_Date","End_Date"])
-# write the data frame to a numpy file
+# write the data frame to a csv file
 excall_df.to_csv (r'exchange_all.csv', index = False, header=True)
