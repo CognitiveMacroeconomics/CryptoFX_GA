@@ -15,7 +15,7 @@ now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
 # a file to write the output logs
-f = open('./log/log'+dt_string+".txt", 'w')
+f = open('./log/pure_crypto_BTC_batch1'+dt_string+".txt", 'w')
 
 class Chromosomes:
     """
@@ -494,20 +494,38 @@ if __name__ == "__main__":
     # Name of the directory where the files are stored
     directory_name = "\pure_crypto"
     
+    # Set the start exchange currency
+    Chromosomes.start_exchange_currency = "USD"
+    f.write("Start Currency:{}\n".format(Chromosomes.start_exchnage_currency))
+    
+    # Set the end exchange currency
+    Chromosomes.end_exchange_currency = "USD"
+    f.write("End Currency:{}\n".format(Chromosomes.end_exchnage_currency))
+    
     # Set the Intermediate Crypto Currency
     intermediate_currency = "BTC"
+    f.write("Intermediate Currency: {}\n".format(intermediate_currency))
     
     # Set the transaction cost
     transaction_cost =  0.04 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
-    
+    f.write("Transaction Cost: {}\n".format(transaction_cost))
+       
     start_min = 1
-    end_min = 1 # integer between [1, 131040]
+    f.write("Start Minute: {}\n".format(start_min))
     
+    end_min = 10 # integer between [1, 131040]
+    f.write("End Minute: {}\n".format(end_min))
+    
+    f.write("############# GA Parameters #############\n")
     # Set the number of generations to run the GA
     max_generations = 400
+    f.write("Number of Generations: {}\n".format(max_generations))
     
+    f.write("Population Size: {}\n".format(200))
+        
     # Set the length of the chromosome
     Chromosomes.chromosome_length = 7
+    f.write("Chromosome length: {}\n".format(Chromosomes.chromosome_length))
     
     # Set the num of crypto currencie:
     # Pure Crypto: 34
@@ -515,21 +533,20 @@ if __name__ == "__main__":
     # Pure-Stable Crypto:
     Chromosomes.num_crypto = 34
     
-    # Set the start exchange currency
-    Chromosomes.start_exchange_currency = "USD"
-    
-    # Set the end exchange currency
-    Chromosomes.end_exchange_currency = "USD"
-    
+    # Set the number of offsprings to be generated
+    Population.num_offsprings = 100
+    f.write("Number of offsprings: {}\n".format(Population.num_offsprings))
     
     # Set the tournament size for parent selection
     Population.tournamnet_size = 5
+    f.write("Tournament size: {}\n".format(Population.tournamnet_size))
     
-    # Set the number of offsprings to be generated
-    Population.num_offsprings = 100
-    
+    f.write("Crossover Probability: {}\n".format(0.8))    
+    f.write("Mutation Probability: {}\n".format(0.3)) 
+    f.write("########################################\n")
     minute = start_min
     
+    f.write("Minute|Arbitrage|Fitness\n")
     while minute <= end_min:
         
         print("Optimizing for minute: {}".format(minute))
