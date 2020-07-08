@@ -305,7 +305,7 @@ class Chromosomes:
             # Calculate fitness                       
             cost *= value
             
-        fitness = max(cost - 1, 0) # cost, max(cost - 1, 0)
+        fitness = cost # cost, max(cost - 1, 0)
 
         return fitness
     
@@ -520,10 +520,10 @@ if __name__ == "__main__":
     
     f.write("############# GA Parameters #############\n")
     # Set the number of generations to run the GA
-    max_generations = 300
+    max_generations = 50
     f.write("Number of Generations: {}\n".format(max_generations))
     
-    f.write("Population Size: {}\n".format(600))
+    f.write("Population Size: {}\n".format(500))
         
     # Set the length of the chromosome
     Chromosomes.chromosome_length = 5
@@ -536,11 +536,11 @@ if __name__ == "__main__":
     Chromosomes.num_crypto = 34
     
     # Set the number of offsprings to be generated
-    Population.num_offsprings = 300
+    Population.num_offsprings = 250
     f.write("Number of offsprings: {}\n".format(Population.num_offsprings))
     
     # Set the tournament size for parent selection
-    Population.tournamnet_size = 5
+    Population.tournamnet_size = 10
     f.write("Tournament size: {}\n".format(Population.tournamnet_size))
     
     f.write("Crossover Probability: {}\n".format(0.8))    
@@ -566,7 +566,7 @@ if __name__ == "__main__":
             # Set the population size
             # Set the probability of crossover
             # Set the probability of mutation
-            pop = Population(size = 600, crossover = 0.8, mutation = 0.3)
+            pop = Population(size = 500, crossover = 0.8, mutation = 0.3)
         
             # Run the optimization procedure for max_generations number of generations
             for i in range(1, max_generations + 1):
