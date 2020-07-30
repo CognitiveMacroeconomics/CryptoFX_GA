@@ -96,12 +96,16 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
         value = data_df.loc[index][1]
         temp_matrix[row_num][column_num] = (value - (value * transaction_cost))
         
+#        value = data_df.loc[index][1]
+#        temp_matrix[row_num][column_num] = value
+        
         # Interchange the column_num and row_um of the matrix and fill the cell
         # with the reciprocal of the exchnage rate after applying trasaction 
         # cost
         if(data_df.loc[index][1] != 0):
             value = 1 / data_df.loc[index][1]
             temp_matrix[column_num][row_num] = (value - (value * transaction_cost))
+#            temp_matrix[column_num][row_num] = value
         # If the exchnage rate if 0 then the cell with the inverted row_num and
         # column_num will also have the exchange rate as 0
         else:
@@ -114,7 +118,7 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
     # An intermediate currency is applied for exchnage paris which do not have
     # direct exchange rate data       
     intrd_currency_index = crypto_dict[intermediate_currency]
-    #print("Intermediate currency is: {} at index {}".format(intermediate_currency, intrd_currency_index))     
+    print("Intermediate currency is: {} at index {}".format(intermediate_currency, intrd_currency_index))     
     
     for j in range(0, num_rows):
         for k in range(0, num_columns):
@@ -160,11 +164,11 @@ if __name__ == "__main__":
     
     intermediate_currency = "BTC"
     
-    transaction_cost =  0.2  # values in {0.04, 0.2, 0.5, 5.9}
+    transaction_cost =  0 # values in {0.04, 0.2, 0.5, 5.9}
     
-#    num_min = 2 # 131040
-    start_min = 1
-    end_min = 1 # 131040
+
+    start_min = 91914
+    end_min = 91914 # 131040
     
     minute = start_min
     while minute <= end_min:
