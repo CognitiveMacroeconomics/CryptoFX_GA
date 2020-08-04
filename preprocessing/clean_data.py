@@ -35,7 +35,7 @@ def check_start_date(raw_data_df):
     to 0.0
     """
     
-    # if does not start from 1st jan 2020, 12:00 pm ("1577836800" is unix time)   
+    # if does not start from 1st jan 2020, 12:00 am ("1577836800" is unix time)   
     if(raw_data_df.iloc[0]['time'] > 1577836800):
 
         # get the time from the first row of the dataframe        
@@ -87,7 +87,7 @@ def check_end_date(start_data_df):
     """This function checks if the retrieved data ends on 31st March 2020, 
      11:59 pm, if not then it appends data at the end and sets "open" to 0.0
     """
-    # if does not end on 31st March 2020, 11:59 am ("1585699140" unix time)
+    # if does not end on 31st March 2020, 11:59 pm ("1585699140" unix time)
     
     if(start_data_df.iloc[start_data_df.shape[0]-1]['time'] < 1585699140):
         
