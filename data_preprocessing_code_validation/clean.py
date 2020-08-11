@@ -10,7 +10,7 @@ import pandas as pd
 import datetime
 
 # Global Variables
-saving_directory_name = "kraken_7days"
+saving_directory_name = "binance_7days"
 
 output_file = open("log.txt","w")
 
@@ -18,12 +18,16 @@ def check_missing_values(raw_data_df):
     """This function checks if there are an NaN vales in the dataset. 
     If there are it raises a ValueError.
     """
+    
     # count the number of nan values
     count_nan = raw_data_df.isnull().sum().sum()
         
     # If there is a NaN value raise a value error exception
     if count_nan != 0:
         raise ValueError("A NaN value found")
+        
+        
+        
         
 def check_intervals(data_df):
     """this function checks if there is an interval of more than 60 secs 
@@ -51,6 +55,9 @@ def check_intervals(data_df):
             # iterate thorugh the indexes
             for j in range(len(idx)):
                 
+                print(data_df.loc[idx[j]-1][0])
+                print(data_df.loc[idx[j]][0])
+                print(data_df.loc[idx[j]+1][0])
                 # get the time of the row before the index
                 gap_start_time = int(data_df.loc[idx[j]-1][0])
                 
@@ -97,7 +104,7 @@ def fill_intervals(data_df):
     
     i = 0
     while i < data_df.shape[0]-1:
-         
+        #print("{}".format(data_df.loc[i][0])) 
         # Calculate the difference in interval
         interval_diffrence = data_df.loc[i+1][0] - data_df.loc[i][0]
         
@@ -161,7 +168,7 @@ def check_start_date(raw_data_df):
     to 0.0
     """
     
-    # if does not start from 2020-05-10 00:00:00 ("1589068800" is unix time)   
+       
     if(raw_data_df.iloc[0]['time'] > 1589068800):
 
         # get the time from the first row of the dataframe        
@@ -177,7 +184,7 @@ def check_start_date(raw_data_df):
         new_open = []
         
         # the time should begin from 1st jan 2020, 12:00 am
-        time = 1577836800
+        time = 1589068800
         
         # while time is less than start time - 60
         while(time <= start_date - 60):
@@ -233,7 +240,7 @@ def check_end_date(start_data_df):
         time = int(end_date) + 60 
         
         # while time is less than 31st March 2020, 11:59 pm 
-        while(time <= 1585699140):
+        while(time <= 1589673540):
             
             # append the value in "time" to "new_time" list
             new_time.append(time)
@@ -273,7 +280,7 @@ def main():
         
         # Change directory to "crypto_raw_data" direcotry
         raw_data_files =  os.scandir(current_working_dir
-                                     + "\\data\\kraken_7_days_data")
+                                     + "\\data\\binance_7_days_data")
         
         
     except IOError as e:
@@ -290,18 +297,28 @@ def main():
             output_file.write("{}\n".format(entry.name))
             
             # The data frame will only contain the "time" and "open" columns
-            raw_data_df = pd.read_csv(".\\data\\kraken_7_days_data\\"
-                                     + entry.name, sep=',')
-
+            raw_data_df = pd.read_csv(".\\data\\binance_7_days_data\\"
+                                     + entry.name, delimiter=',', encoding="utf-8-sig")
+            
+            
+            #remove duplicate rows
+            raw_data_df = raw_data_df.drop_duplicates(subset =["time"], 
+                     keep = "first").reset_index(drop=True)
+            
+#            raw_data_df.to_csv("copy", mode = 'w',\
+#                                 columns=["time", "open"], index=False)
             
             # Call the function to check for NaN values
             check_missing_values(raw_data_df)
             
             # Call the function check intervals for a part of a day
-            check_intervals(raw_data_df)
+            #check_intervals(raw_data_df)
             
             # Call the function to fill intervals
             crypto_data_df = fill_intervals(raw_data_df)
+            
+#            crypto_data_df.to_csv("copy", mode = 'w',\
+#                                 columns=["time", "open"], index=False)
             
             # Call the function to add data from start date 1st jan, 2020 
             start_data_df = check_start_date(crypto_data_df)
@@ -338,6 +355,11 @@ def main():
             print("Next")
             
         except ValueError as e:
+            output_file.write("{}\n".format(e))
+            print(e)
+            print("Next")
+            
+        except IndexError as e:
             output_file.write("{}\n".format(e))
             print(e)
             print("Next")
