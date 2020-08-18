@@ -17,7 +17,7 @@ now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
 # a file to write the output logs
-f = open('./log/pure_crypto_ETH_'+dt_string+".txt", 'w')
+f = open('./log/stable_crypto_USDT_'+dt_string+".txt", 'w')
 
 class Chromosomes:
     """
@@ -485,16 +485,17 @@ class Population:
 if __name__ == "__main__":
     
     # Pure Crypto: 
-    #   Intermerdiate Currency: BTC, ETH
+    #   Intermerdiate Currency: BTC, ETH, BCH
     
     # Stable Crypto:
-    #   Intermerdiate Currency:       
+    #   Intermerdiate Currency: USDT, XRP      
     
     # Pure-Stable Crypto:
-    #   Intermerdiate Currency:       
+    #   Intermerdiate Currency:     
     
     # Name of the directory where the files are stored
-    directory_name = "\pure_crypto"
+    # {"\pure_crypto", "\stable_crypto"}
+    directory_name = "\stable_crypto" 
     
     # Set the start exchange currency
     Chromosomes.start_exchange_currency = "USD"
@@ -505,14 +506,14 @@ if __name__ == "__main__":
     f.write("End Currency:{}\n".format(Chromosomes.end_exchnage_currency))
     
     # Set the Intermediate Crypto Currency
-    intermediate_currency = "ETH"
+    intermediate_currency = "USDT"
     f.write("Intermediate Currency: {}\n".format(intermediate_currency))
     
     # Set the transaction cost
-    transaction_cost =  0.2 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
+    transaction_cost =  0.04 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
     f.write("Transaction Cost: {}\n".format(transaction_cost))
        
-    start_min = 131040
+    start_min = 1
     f.write("Start Minute: {}\n".format(start_min))
     
     end_min = 131040 # integer between [1, 131040]
@@ -526,14 +527,14 @@ if __name__ == "__main__":
     f.write("Population Size: {}\n".format(500))
         
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 7
+    Chromosomes.chromosome_length = 10
     f.write("Chromosome length: {}\n".format(Chromosomes.chromosome_length))
     
     # Set the num of crypto currencie:
     # Pure Crypto: 34
-    # Stable Crypto: 
+    # Stable Crypto: 23
     # Pure-Stable Crypto:
-    Chromosomes.num_crypto = 34
+    Chromosomes.num_crypto = 23 
     
     # Set the number of offsprings to be generated
     Population.num_offsprings = 250
