@@ -10,7 +10,7 @@ import pandas as pd
 import datetime
 
 # Global Variables
-saving_directory_name = "binance_7days"
+saving_directory_name = "coinbase_7days"
 
 output_file = open("log.txt","w")
 
@@ -183,7 +183,6 @@ def check_start_date(raw_data_df):
         # a list that stores new open (0.0)
         new_open = []
         
-        # the time should begin from 1st jan 2020, 12:00 am
         time = 1589068800
         
         # while time is less than start time - 60
@@ -239,7 +238,7 @@ def check_end_date(start_data_df):
         # set time to "end_date" + 60
         time = int(end_date) + 60 
         
-        # while time is less than 31st March 2020, 11:59 pm 
+        # while time is less than 2020-05-16 23:59:00 
         while(time <= 1589673540):
             
             # append the value in "time" to "new_time" list
@@ -280,7 +279,7 @@ def main():
         
         # Change directory to "crypto_raw_data" direcotry
         raw_data_files =  os.scandir(current_working_dir
-                                     + "\\data\\binance_7_days_data")
+                                     + "\\data\\coinbase_7_days_data")
         
         
     except IOError as e:
@@ -297,7 +296,7 @@ def main():
             output_file.write("{}\n".format(entry.name))
             
             # The data frame will only contain the "time" and "open" columns
-            raw_data_df = pd.read_csv(".\\data\\binance_7_days_data\\"
+            raw_data_df = pd.read_csv(".\\data\\coinbase_7_days_data\\"
                                      + entry.name, delimiter=',', encoding="utf-8-sig")
             
             

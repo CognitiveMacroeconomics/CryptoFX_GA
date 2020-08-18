@@ -10,7 +10,7 @@ import pandas as pd
 from datetime import datetime
 import numpy as np
 
-output_file = open("binance_end_dates.txt","w")
+output_file = open("coinbase_end_dates.txt","w")
 
 def extract_dates(directory_path,file_name,data_df):
     
@@ -68,9 +68,9 @@ def read_data(file_path, file_name):
 if __name__ == "__main__":
     
     # Name of the directory where the files are stored
-    directory_name = "\\binance"
+    directory_name = "\\coinbase"
     
-    saving_directory_name = "\\binance_7_days_data"
+    saving_directory_name = "\\coinbase_7_days_data"
     
     # Get the name of all the files in the directory
     data_files =  os.scandir(".\data"+directory_name)
