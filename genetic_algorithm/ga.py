@@ -17,7 +17,7 @@ now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
 # a file to write the output logs
-f = open('./log/stable_crypto_USDT_'+dt_string+".txt", 'w')
+f = open('./log/pure_stable_crypto_BTC_'+dt_string+".txt", 'w')
 
 class Chromosomes:
     """
@@ -495,7 +495,7 @@ if __name__ == "__main__":
     
     # Name of the directory where the files are stored
     # {"\pure_crypto", "\stable_crypto"}
-    directory_name = "\stable_crypto" 
+    directory_name = "\pure_stable_crypto" 
     
     # Set the start exchange currency
     Chromosomes.start_exchange_currency = "USD"
@@ -506,7 +506,7 @@ if __name__ == "__main__":
     f.write("End Currency:{}\n".format(Chromosomes.end_exchnage_currency))
     
     # Set the Intermediate Crypto Currency
-    intermediate_currency = "USDT"
+    intermediate_currency = "BTC"
     f.write("Intermediate Currency: {}\n".format(intermediate_currency))
     
     # Set the transaction cost
@@ -516,7 +516,7 @@ if __name__ == "__main__":
     start_min = 1
     f.write("Start Minute: {}\n".format(start_min))
     
-    end_min = 131040 # integer between [1, 131040]
+    end_min = 3 # integer between [1, 131040]
     f.write("End Minute: {}\n".format(end_min))
     
     f.write("############# GA Parameters #############\n")
@@ -533,8 +533,8 @@ if __name__ == "__main__":
     # Set the num of crypto currencie:
     # Pure Crypto: 34
     # Stable Crypto: 23
-    # Pure-Stable Crypto:
-    Chromosomes.num_crypto = 23 
+    # Pure-Stable Crypto: 56
+    Chromosomes.num_crypto = 56 
     
     # Set the number of offsprings to be generated
     Population.num_offsprings = 250

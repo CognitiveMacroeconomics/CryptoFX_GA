@@ -160,9 +160,9 @@ def main(directory_name, intermediate_currency, minute, transaction_cost):
 if __name__ == "__main__":
     
     # Name of the directory where the files are stored
-    directory_name = "\stable_crypto"
+    directory_name = "\pure_stable_crypto"
     
-    intermediate_currency = "USDT"
+    intermediate_currency = "BTC"
     
     transaction_cost =  0 # values in {0.04, 0.2, 0.5, 5.9}
     
@@ -182,7 +182,7 @@ if __name__ == "__main__":
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
     
-        writer = pd.ExcelWriter('stable_crypto_exchnages_' + dt_string + '.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter('pur_crypto_exchnages_' + dt_string + '.xlsx', engine='xlsxwriter')
     
         
         df = pd.DataFrame(exchange_rate_matrix)
