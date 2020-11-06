@@ -12,12 +12,7 @@ import traceback
 
 __all__ = ['Chromosomes','Population']
 
-# Get current date time
-now = datetime.now()
-dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-
-# a file to write the output logs
-f = open('./log/pure_stable_crypto_BTC_'+dt_string+".txt", 'w')
+print("Hi")
 
 class Chromosomes:
     """
@@ -484,6 +479,13 @@ class Population:
 
 if __name__ == "__main__":
     
+    # Get current date time
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+
+    # a file to write the output logs
+    f = open('./log/pure_crypto_BTC_20chromo'+dt_string+".txt", 'w')
+    
     # Pure Crypto: 
     #   Intermerdiate Currency: BTC, ETH, BCH
     
@@ -491,11 +493,11 @@ if __name__ == "__main__":
     #   Intermerdiate Currency: USDT, XRP      
     
     # Pure-Stable Crypto:
-    #   Intermerdiate Currency:     
+    #   Intermerdiate Currency: BTC, XRP, ETH, USDT    
     
     # Name of the directory where the files are stored
-    # {"\pure_crypto", "\stable_crypto"}
-    directory_name = "\pure_stable_crypto" 
+    # {"\pure_crypto", "\stable_crypto", "\pure_stable_crypto"}
+    directory_name = "\pure_crypto" 
     
     # Set the start exchange currency
     Chromosomes.start_exchange_currency = "USD"
@@ -510,13 +512,15 @@ if __name__ == "__main__":
     f.write("Intermediate Currency: {}\n".format(intermediate_currency))
     
     # Set the transaction cost
-    transaction_cost =  0.04 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
+    transaction_cost =  0.5 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
     f.write("Transaction Cost: {}\n".format(transaction_cost))
-       
+    
+    # Set the mintue you want to start at
     start_min = 1
     f.write("Start Minute: {}\n".format(start_min))
     
-    end_min = 3 # integer between [1, 131040]
+    # Set the minute you want to end at
+    end_min = 1 # integer between [1, 131040]
     f.write("End Minute: {}\n".format(end_min))
     
     f.write("############# GA Parameters #############\n")
@@ -527,14 +531,14 @@ if __name__ == "__main__":
     f.write("Population Size: {}\n".format(500))
         
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 10
+    Chromosomes.chromosome_length = 20
     f.write("Chromosome length: {}\n".format(Chromosomes.chromosome_length))
     
-    # Set the num of crypto currencie:
+    # Set the num of crypto currencies:
     # Pure Crypto: 34
     # Stable Crypto: 23
     # Pure-Stable Crypto: 56
-    Chromosomes.num_crypto = 56 
+    Chromosomes.num_crypto = 34 
     
     # Set the number of offsprings to be generated
     Population.num_offsprings = 250
