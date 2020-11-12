@@ -47,6 +47,9 @@ class Chromosomes:
     def __init__(self, chromosome):
         """
         Constructor to initialize the chromosome and its fitness
+        
+        Parameter:
+        chromosome (list): chromosome of the population
         """
 
         self.chromosome = chromosome
@@ -58,6 +61,9 @@ class Chromosomes:
         Method used to mate the chromosome with another chromosome,
         resulting in a new chromosome being returned.
         One Point Crossover
+        
+        Parameter:
+        mate (Chromosome): the chromosome to required to mate with
         """
         
         # Select a pivot point
@@ -104,7 +110,7 @@ class Chromosomes:
                 
             # Append to offspring2
             offspring2.append(offspring2_temp[i])
-
+        
         return Chromosomes(offspring1), Chromosomes(offspring2)
     
     
@@ -113,6 +119,9 @@ class Chromosomes:
         Method used to mate the chromosome with another chromosome,
         resulting in a new chromosome being returned.
         Order One Crossover
+        
+        Parameter:
+        mate (Chromosome): the chromosome to required to mate with
         """
         
         # Set the first parent
@@ -243,6 +252,10 @@ class Chromosomes:
         """
         Helper method used to return the fitness for the chromosome based on
         its genes.
+        
+        Parameter:
+        chromosome (Chromosome): chromosome whoes fitness needs to be 
+                                calculated
         """
         
         for key, value in Chromosomes.crypto_index.items():
@@ -358,6 +371,11 @@ class Population:
         """
         Constructor to initializes the probabbility of crossover and the
         probablility of mutation and the size of the population
+        
+        Parameters:
+        size (int): size of the population
+        crossover (float): crossover probablity
+        mutation (float): mutation probability
         """
         
         self.crossover = crossover

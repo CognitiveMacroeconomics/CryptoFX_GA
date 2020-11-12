@@ -11,16 +11,20 @@ from datetime import datetime
 import sys
 import traceback
 
-def run(f, directory_name, minute,pop_size, intermediate_currency, transaction_cost,
-        max_generations, flag):
+def run(f, directory_name, minute,pop_size, intermediate_currency,
+        transaction_cost, max_generations, flag):
+    
+    """A function that starts the optimization process.
+    """
     
     print("Optimizing for minute: {}".format(minute))
-        # Call main() from source.py to read the files an extarct the exchnage
-        # rates. 
-        # source.main() returns the exchange rate matrix and the the index of the
-        # crypto currencies. 
+    # Call main() from source.py to read the files an extarct the exchnage
+    # rates. 
+    # source.main() returns the exchange rate matrix and the the index of the
+    # crypto currencies. 
     Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index =\
-                                                        source.main(directory_name,
+                                                        source.main(
+                                                        directory_name,
                                                         intermediate_currency,
                                                         minute,
                                                         transaction_cost)
@@ -58,6 +62,10 @@ def run(f, directory_name, minute,pop_size, intermediate_currency, transaction_c
         
 def experiment_1():
     
+    """
+    A function to set the parameters of of the experiment
+    """
+    
     # Get current date time
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
@@ -78,11 +86,13 @@ def experiment_1():
     f.write("End Currency:{}\n".format(Chromosomes.end_exchnage_currency))
     
     # Set the Intermediate Crypto Currency
+    # DnB set this to a fiat currency
     intermediate_currency = "BTC"
     f.write("Intermediate Currency: {}\n".format(intermediate_currency))
     
     # Set the transaction cost
-    transaction_cost =  0.5 * 0.01 # values in {0.04, 0.2, 0.5, 5.9}
+    # DnB if there is no intermediate currency then set it to 0
+    transaction_cost =  0.5 * 0.01 # values in {0, 0.04, 0.2, 0.5, 5.9}
     f.write("Transaction Cost: {}\n".format(transaction_cost))
     
     # Set the mintue you want to start at
@@ -133,8 +143,8 @@ def experiment_1():
     flag = [True]
     while minute <= end_min:
         
-        run(f, directory_name, minute, pop_size, intermediate_currency, transaction_cost,
-               max_generations, flag)
+        run(f, directory_name, minute, pop_size, intermediate_currency,
+            transaction_cost, max_generations, flag)
 
         # Increase the minute by one
         minute+=1                                          
@@ -145,15 +155,7 @@ def experiment_1():
 
 
 if __name__ == "__main__":
-    
-    # Pure Crypto: 
-    #   Intermerdiate Currency: BTC, ETH, BCH
-    
-    # Stable Crypto:
-    #   Intermerdiate Currency: USDT, XRP      
-    
-    # Pure-Stable Crypto:
-    #   Intermerdiate Currency: BTC, XRP, ETH, USDT    
+       
     
     try:
         experiment_1()

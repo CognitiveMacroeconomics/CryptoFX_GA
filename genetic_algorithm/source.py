@@ -17,7 +17,7 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
     matrix. The first dimensionality is the "from" cryptocurrency. The second 
     dimensionality is the "to" currency.
     
-    It takes in as parametes:
+    Parameters: 
         - directory_names : the name of the directory where all the exchange
             rate files are stored
         - intermediate_currency : The intermediate currency used to fill the
@@ -118,7 +118,9 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
     # An intermediate currency is applied for exchnage paris which do not have
     # direct exchange rate data       
     intrd_currency_index = crypto_dict[intermediate_currency]
-    print("Intermediate currency is: {} at index {}".format(intermediate_currency, intrd_currency_index))     
+    print("Intermediate currency is: {} at index {}".format(\
+                                                      intermediate_currency,
+                                                      intrd_currency_index))     
     
     for j in range(0, num_rows):
         for k in range(0, num_columns):
@@ -149,6 +151,13 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
 def main(directory_name, intermediate_currency, minute, transaction_cost):
     """
     A function that calls the read_data function.
+    
+    Parameters:
+        directory_name (String): name of the directory where the files are 
+                                stored
+        intermediate_currency (String): the intermediate currency
+        minute (int): the minute for which the data is needed
+        transaction_cost (int):                
     """
     
     crypto_index, exchange_rate_matrix = read_data(directory_name,
@@ -182,7 +191,8 @@ if __name__ == "__main__":
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
     
-        writer = pd.ExcelWriter('pur_crypto_exchnages_' + dt_string + '.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter('pur_crypto_exchnages_' + dt_string + '.xlsx',\
+                                engine='xlsxwriter')
     
         
         df = pd.DataFrame(exchange_rate_matrix)
