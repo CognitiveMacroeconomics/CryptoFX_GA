@@ -91,7 +91,6 @@ def experiment_1():
     f.write("Intermediate Currency: {}\n".format(intermediate_currency))
     
     # Set the transaction cost
-    # DnB if there is no intermediate currency then set it to 0
     transaction_cost =  0.5 * 0.01 # values in {0, 0.04, 0.2, 0.5, 5.9}
     f.write("Transaction Cost: {}\n".format(transaction_cost))
     

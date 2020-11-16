@@ -115,13 +115,16 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
     for j in range(0, num_rows):
         temp_matrix[j][j] = 1
     
+    ###########################################################################
+    # COMMENT OUT THIS PIECE OF CODE IF THERE IS NO INTERMEDIATE CURRENCY
+    ###########################################################################
     # An intermediate currency is applied for exchnage paris which do not have
     # direct exchange rate data       
     intrd_currency_index = crypto_dict[intermediate_currency]
     print("Intermediate currency is: {} at index {}".format(\
                                                       intermediate_currency,
                                                       intrd_currency_index))     
-    
+
     for j in range(0, num_rows):
         for k in range(0, num_columns):
             if j!=intrd_currency_index:
@@ -140,7 +143,8 @@ def read_data(directory_name, intermediate_currency, minute, transaction_cost):
                         value4 = (value3 - (value3 * transaction_cost))
                         
                         temp_matrix[j][k] = value2 * value4
-                
+    ###########################################################################
+            
     # reverse the dictionary            
     crypto_index = {value : key for (key, value) in crypto_dict.items()}
                    
@@ -169,11 +173,11 @@ def main(directory_name, intermediate_currency, minute, transaction_cost):
 if __name__ == "__main__":
     
     # Name of the directory where the files are stored
-    directory_name = "\pure_stable_crypto"
+    directory_name = "\pure_crypto"
     
     intermediate_currency = "BTC"
     
-    transaction_cost =  0 # values in {0.04, 0.2, 0.5, 5.9}
+    transaction_cost =  0.04 # values in {0.04, 0.2, 0.5, 5.9}
     
 
     start_min = 1
@@ -191,7 +195,7 @@ if __name__ == "__main__":
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
     
-        writer = pd.ExcelWriter('pur_crypto_exchnages_' + dt_string + '.xlsx',\
+        writer = pd.ExcelWriter('pure_crypto_exchnages_' + dt_string + '.xlsx',\
                                 engine='xlsxwriter')
     
         
