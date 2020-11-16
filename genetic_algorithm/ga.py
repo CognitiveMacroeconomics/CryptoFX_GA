@@ -12,7 +12,6 @@ import traceback
 
 __all__ = ['Chromosomes','Population']
 
-print("Hi")
 
 class Chromosomes:
     """
