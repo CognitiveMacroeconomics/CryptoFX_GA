@@ -71,11 +71,11 @@ def experiment_1():
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     
     # a file to write the output logs
-    f = open('./log/pure_crypto_BTC'+dt_string+".txt", 'w')
+    f = open('./log/pure_stable_crypto_BTC_20chromo'+dt_string+".txt", 'w')
     
     # Name of the directory where the files are stored
     # {"\pure_crypto", "\stable_crypto", "\pure_stable_crypto"}
-    directory_name = "\pure_crypto" 
+    directory_name = "\pure_stable_crypto" 
         
     # Set the start exchange currency
     Chromosomes.start_exchange_currency = "USD"
@@ -99,7 +99,7 @@ def experiment_1():
     f.write("Start Minute: {}\n".format(start_min))
     
     # Set the minute you want to end at
-    end_min = 10 # integer between [1, 131040]
+    end_min = 1 # integer between [1, 131040]
     f.write("End Minute: {}\n".format(end_min))
     
     # Set the num of crypto currencies:
@@ -107,7 +107,7 @@ def experiment_1():
     # Stable Crypto: 23
     # Pure-Stable Crypto: 56
     # you can also set the number of unique currencies in the dataset
-    Chromosomes.num_crypto = 34
+    Chromosomes.num_crypto = 56
     f.write("Number of currencies: {}\n".format(Chromosomes.num_crypto))
     
     f.write("############# GA Parameters #############\n")
@@ -120,7 +120,7 @@ def experiment_1():
     f.write("Population Size: {}\n".format(pop_size))
         
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 5 # [5, 7, 10]
+    Chromosomes.chromosome_length = 20 # [5, 7, 10]
     f.write("Chromosome length: {}\n".format(Chromosomes.chromosome_length))
     
     # Set the number of offsprings to be generated
