@@ -9,13 +9,13 @@ import pandas as pd
 import os
 
 # name of the directory
-directory_name = "\CryptoFX_GA-master_Exp_3"
+directory_name = "\CryptoFX_GA-master_Exp_48"
 
 # get the name of all the files in the directory
 result_files =  os.scandir(".\experiment_result"+directory_name)
 
 # the window size of the moving average 
-window_size = [10080] # {10080, 1440}
+window_size = [1440, 10080] # {10080, 1440}
 
 
 
@@ -29,7 +29,7 @@ for file in [entry for entry in result_files if entry.name.endswith('.txt')]:
             
             for ws in window_size:
     
-                print("Calculating moving average for widow size:{}:".format(ws))
+                print("Calculating moving average for window size:{}:".format(ws))
     
                 # new column name of the moving average
                 new_coulmn_name = 'SMA_' + str(ws)
