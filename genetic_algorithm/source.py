@@ -220,13 +220,6 @@ if __name__ == "__main__":
      
                 writer.save()
         
-        #if count == 0:
-            #exchange_rate_matrix1 = exchange_rate_matrix
-            
-        #elif count == 1:
-            #exchange_rate_matrix2 = exchange_rate_matrix
-            
-        #count += 1
         
         minute += chunk_size
     
