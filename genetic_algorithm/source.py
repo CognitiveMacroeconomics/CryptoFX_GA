@@ -82,9 +82,9 @@ def read_data(directory_name, intermediate_currency, minute, chunk_size, transac
         data_df = pd.read_csv(".\data"+directory_name+"\\"+file, 
                               usecols = [0,1])
         time = 0
+        index = minute - 1
         while time < chunk_size:
-            index = minute - 1
-
+            
             """ Get the names of the crypto-currencies
             "crypto_1" stores "from" currency which will be the row value of the
             matrix. "crypto_2" stores the "to" currency which will be the column 
@@ -116,6 +116,7 @@ def read_data(directory_name, intermediate_currency, minute, chunk_size, transac
                 temp_matrix[time][column_num][row_num] = data_df.loc[index][1] # 0
                 
             time += 1
+            index += 1
         
     # The exchange rate between the same crypto currency will be 1
     for t in range(0, chunk_size):    
@@ -138,18 +139,18 @@ def read_data(directory_name, intermediate_currency, minute, chunk_size, transac
                     if k!=intrd_currency_index:
                         if(temp_matrix[t][j][k] == 0):
                         
-                            #temp_matrix[j][k] = -1
+                            temp_matrix[t][j][k] = -1
                         
-                            value1 = temp_matrix[t][j][intrd_currency_index]
+                            #value1 = temp_matrix[t][j][intrd_currency_index]
                             # Applying the transaction cost
-                            value2 = (value1 - (value1 * transaction_cost))
+                            #value2 = (value1 - (value1 * transaction_cost))
                         
-                            value3 = temp_matrix[t][intrd_currency_index][k]
+                            #value3 = temp_matrix[t][intrd_currency_index][k]
                         
                             # Applying the transaction cost
-                            value4 = (value3 - (value3 * transaction_cost))
+                            #value4 = (value3 - (value3 * transaction_cost))
                         
-                            temp_matrix[t][j][k] = value2 * value4
+                            #temp_matrix[t][j][k] = value2 * value4
     ###########################################################################
             
     # reverse the dictionary            
@@ -184,12 +185,12 @@ if __name__ == "__main__":
     
     intermediate_currency = "BTC"
     
-    transaction_cost =  0.04 # values in {0.04, 0.2, 0.5, 5.9}
+    transaction_cost =  0 # values in {0.04, 0.2, 0.5, 5.9}
     
 
     start_minute = 1
-    end_minute = 10000 # 131040
-    chunk_size = 5000
+    end_minute = 1 # 131040
+    chunk_size = 1
     
     count = 0
     minute = start_minute
@@ -209,23 +210,23 @@ if __name__ == "__main__":
         now = datetime.now()
         dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
+        if chunk_size == 1:
+            writer = pd.ExcelWriter('pure_crypto_exchanges_' + dt_string + '.xlsx',\
+                                engine='xlsxwriter')
     
-        #writer = pd.ExcelWriter('pure_crypto_exchnages_' + dt_string + '.xlsx',\
-         #                       engine='xlsxwriter')
-    
-        
-        #df = pd.DataFrame(exchange_rate_matrix)
-        #df.to_excel(writer, sheet_name= 'Time_'+str(minute))
+            for t in range (chunk_size):
+                df = pd.DataFrame(exchange_rate_matrix[t])
+                df.to_excel(writer, sheet_name= 'Time_'+str(minute))
      
-        #writer.save()
+                writer.save()
         
-        if count == 0:
-            exchange_rate_matrix1 = exchange_rate_matrix
+        #if count == 0:
+            #exchange_rate_matrix1 = exchange_rate_matrix
             
-        elif count == 1:
-            exchange_rate_matrix2 = exchange_rate_matrix
+        #elif count == 1:
+            #exchange_rate_matrix2 = exchange_rate_matrix
             
-        count += 1
+        #count += 1
         
         minute += chunk_size
     
