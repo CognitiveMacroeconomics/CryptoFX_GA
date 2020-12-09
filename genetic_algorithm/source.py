@@ -139,18 +139,18 @@ def read_data(directory_name, intermediate_currency, minute, chunk_size, transac
                     if k!=intrd_currency_index:
                         if(temp_matrix[t][j][k] == 0):
                         
-                            temp_matrix[t][j][k] = -1
+                            #temp_matrix[t][j][k] = -1
                         
-                            #value1 = temp_matrix[t][j][intrd_currency_index]
+                            value1 = temp_matrix[t][j][intrd_currency_index]
                             # Applying the transaction cost
-                            #value2 = (value1 - (value1 * transaction_cost))
+                            value2 = (value1 - (value1 * transaction_cost))
                         
-                            #value3 = temp_matrix[t][intrd_currency_index][k]
+                            value3 = temp_matrix[t][intrd_currency_index][k]
                         
                             # Applying the transaction cost
-                            #value4 = (value3 - (value3 * transaction_cost))
+                            value4 = (value3 - (value3 * transaction_cost))
                         
-                            #temp_matrix[t][j][k] = value2 * value4
+                            temp_matrix[t][j][k] = value2 * value4
     ###########################################################################
             
     # reverse the dictionary            
@@ -160,7 +160,7 @@ def read_data(directory_name, intermediate_currency, minute, chunk_size, transac
     #Return the currency index list and the exchange rate 3-D matrix  
     return crypto_index, temp_matrix
 
-def main(directory_name, intermediate_currency, minute, transaction_cost):
+def main(directory_name, intermediate_currency, minute, chunk_size, transaction_cost):
     """
     A function that calls the read_data function.
     
@@ -175,6 +175,7 @@ def main(directory_name, intermediate_currency, minute, transaction_cost):
     crypto_index, exchange_rate_matrix = read_data(directory_name,
                                                    intermediate_currency, 
                                                    minute,
+                                                   chunk_size,
                                                    transaction_cost)
     return exchange_rate_matrix, crypto_index
 
@@ -185,14 +186,14 @@ if __name__ == "__main__":
     
     intermediate_currency = "BTC"
     
-    transaction_cost =  0 # values in {0.04, 0.2, 0.5, 5.9}
+    transaction_cost =  0.04 # values in {0.04, 0.2, 0.5, 5.9}
     
 
     start_minute = 1
     end_minute = 1 # 131040
     chunk_size = 1
     
-    count = 0
+    
     minute = start_minute
     while minute <= end_minute:
     
