@@ -501,7 +501,7 @@ if __name__ == "__main__":
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
     # a file to write the output logs
-    f = open('./log/pure_crypto_BTC_20chromo'+dt_string+".txt", 'w')
+    f = open('./log/pure_crypto_BTC_7chromo'+dt_string+".txt", 'w')
     
     # Pure Crypto: 
     #   Intermerdiate Currency: BTC, ETH, BCH
@@ -541,7 +541,7 @@ if __name__ == "__main__":
     f.write("End Minute: {}\n".format(end_min))
     
     # Chunk size
-    chunk_size = 5000
+    chunk_size = 1000
     
     f.write("############# GA Parameters #############\n")
     # Set the number of generations to run the GA
@@ -594,7 +594,7 @@ if __name__ == "__main__":
                                                         transaction_cost)
             for t in range(chunk_size):
                 
-                print("########################################\n")
+                print("########################################")
                 print("Optimizing for minute: {}".format(minute+t))
                 print("########################################\n")
                 
