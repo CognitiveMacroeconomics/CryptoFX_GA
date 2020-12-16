@@ -12,7 +12,7 @@ import sys
 import traceback
 
 def run(f, directory_name, minute,pop_size, intermediate_currency,
-        transaction_cost, max_generations, flag):
+        transaction_cost, max_generations, chunk_size, flag):
     
     """A function that starts the optimization process.
     """
@@ -22,41 +22,52 @@ def run(f, directory_name, minute,pop_size, intermediate_currency,
     # rates. 
     # source.main() returns the exchange rate matrix and the the index of the
     # crypto currencies. 
-    Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index =\
+    exchange_rate_matrix, Chromosomes.crypto_index =\
                                                         source.main(
                                                         directory_name,
                                                         intermediate_currency,
                                                         minute,
+                                                        chunk_size,
                                                         transaction_cost)
-    # wirte the index of the currescies to the file
+    # wirte the index of the currencies to the file
     if flag[0] == True:
         f.write("{}\n".format(Chromosomes.crypto_index))
         f.write("########################################\n")
         f.write("Minute|Arbitrage|Fitness\n")
         flag[0] = [False]
+    
+    for t in range(chunk_size):
+                
+        print("########################################")
+        print("Optimizing for minute: {}".format(minute+t))
+        print("########################################\n")
+        
+        # Set the exchnage rate matrix
+        Chromosomes.exchange_rate_matrix = exchange_rate_matrix[t]
+                
+        # Create the Population object
+        # Set the population size
+        # Set the probability of crossover
+        # Set the probability of mutation
+        pop = Population(size = pop_size, crossover = 0.8, mutation = 0.3)
             
-    # Create the Population object
-    # Set the population size
-    # Set the probability of crossover
-    # Set the probability of mutation
-    pop = Population(size = pop_size, crossover = 0.8, mutation = 0.3)
+        # Run the optimization procedure for max_generations number of generations
+        for i in range(1, max_generations + 1):
             
-    # Run the optimization procedure for max_generations number of generations
-    for i in range(1, max_generations + 1):
+            print("Generation: {}".format(i))
             
-        print("Generation: {}".format(i))
-            
-        # Print the top most chromosome in the population
-        print("{}\t{}".format(pop.entire_population[0].chromosome,
+            # Print the top most chromosome in the population
+            print("{}\t{}".format(pop.entire_population[0].chromosome,
                                       pop.entire_population[0].fitness))
                 
-        # Start evolving the population
-        pop.evolve()
-                
-    f.write("{}|".format(minute))
-    for j in (pop.entire_population[0].chromosome):
-        f.write("{} ".format(j))
-    f.write("|{}\n".format(pop.entire_population[0].fitness))
+            # Start evolving the population
+            pop.evolve()
+        
+        # Write to file        
+        f.write("{}|".format(minute+t))
+        for j in (pop.entire_population[0].chromosome):
+            f.write("{} ".format(j))
+        f.write("|{}\n".format(pop.entire_population[0].fitness))
             
 
         
@@ -71,11 +82,11 @@ def experiment_1():
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     
     # a file to write the output logs
-    f = open('./log/pure_stable_crypto_BTC_30chromo'+dt_string+".txt", 'w')
+    f = open('./log/pure_crypto_BTC_7chromo'+dt_string+".txt", 'w')
     
     # Name of the directory where the files are stored
     # {"\pure_crypto", "\stable_crypto", "\pure_stable_crypto"}
-    directory_name = "\pure_stable_crypto" 
+    directory_name = "\pure_crypto" 
         
     # Set the start exchange currency
     Chromosomes.start_exchange_currency = "USD"
@@ -99,28 +110,31 @@ def experiment_1():
     f.write("Start Minute: {}\n".format(start_min))
     
     # Set the minute you want to end at
-    end_min = 1 # integer between [1, 131040]
+    end_min = 131040 # integer between [1, 131040]
     f.write("End Minute: {}\n".format(end_min))
+    
+    # Chunk size
+    chunk_size = 1000
     
     # Set the num of crypto currencies:
     # Pure Crypto: 34
     # Stable Crypto: 23
     # Pure-Stable Crypto: 56m
     # you can also set the number of unique currencies in the dataset
-    Chromosomes.num_crypto = 56
+    Chromosomes.num_crypto = 34
     f.write("Number of currencies: {}\n".format(Chromosomes.num_crypto))
     
     f.write("############# GA Parameters #############\n")
             
     # Set the number of generations to run the GA
-    max_generations = 100
+    max_generations = 50
     f.write("Number of Generations: {}\n".format(max_generations))
     
     pop_size = 500
     f.write("Population Size: {}\n".format(pop_size))
         
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 30 # [5, 7, 10]
+    Chromosomes.chromosome_length = 7 # [5, 7, 10]
     f.write("Chromosome length: {}\n".format(Chromosomes.chromosome_length))
     
     # Set the number of offsprings to be generated
@@ -142,11 +156,14 @@ def experiment_1():
     flag = [True]
     while minute <= end_min:
         
+        if end_min - minute + 1 < chunk_size:
+                chunk_size = end_min - minute + 1
+        
         run(f, directory_name, minute, pop_size, intermediate_currency,
-            transaction_cost, max_generations, flag)
+            transaction_cost, max_generations, chunk_size, flag)
 
         # Increase the minute by one
-        minute+=1                                          
+        minute += chunk_size                                       
     
     f.close()
     
