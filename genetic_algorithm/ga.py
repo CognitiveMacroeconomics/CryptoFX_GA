@@ -501,7 +501,7 @@ if __name__ == "__main__":
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
 
     # a file to write the output logs
-    f = open('./log/pure_crypto_BTC_20chromo'+dt_string+".txt", 'w')
+    f = open('./log/pure_crypto_BTC_7chromo'+dt_string+".txt", 'w')
     
     # Pure Crypto: 
     #   Intermerdiate Currency: BTC, ETH, BCH
@@ -537,8 +537,11 @@ if __name__ == "__main__":
     f.write("Start Minute: {}\n".format(start_min))
     
     # Set the minute you want to end at
-    end_min = 1 # integer between [1, 131040]
+    end_min = 10000 # integer between [1, 131040]
     f.write("End Minute: {}\n".format(end_min))
+    
+    # Chunk size
+    chunk_size = 1000
     
     f.write("############# GA Parameters #############\n")
     # Set the number of generations to run the GA
@@ -548,7 +551,7 @@ if __name__ == "__main__":
     f.write("Population Size: {}\n".format(500))
         
     # Set the length of the chromosome
-    Chromosomes.chromosome_length = 20
+    Chromosomes.chromosome_length = 7
     f.write("Chromosome length: {}\n".format(Chromosomes.chromosome_length))
     
     # Set the num of crypto currencies:
@@ -568,47 +571,61 @@ if __name__ == "__main__":
     f.write("Crossover Probability: {}\n".format(0.8))    
     f.write("Mutation Probability: {}\n".format(0.3)) 
     f.write("########################################\n")
+    
     minute = start_min
     
     f.write("Minute|Arbitrage|Fitness\n")
     while minute <= end_min:
         try:
-            print("Optimizing for minute: {}".format(minute))
+            
+            if end_min - minute + 1 < chunk_size:
+                chunk_size = end_min - minute + 1
+            
+            
             # Call main() from source.py to read the files an extarct the exchnage
             # rates. 
             # source.main() returns the exchange rate matrix and the the index of the
             # crypto currencies. 
-            Chromosomes.exchange_rate_matrix, Chromosomes.crypto_index =\
+            exchange_rate_matrix, Chromosomes.crypto_index =\
                                                         source.main(directory_name,
                                                         intermediate_currency,
                                                         minute,
+                                                        chunk_size,
                                                         transaction_cost)
-                                                        
-            # Create the Population object
-            # Set the population size
-            # Set the probability of crossover
-            # Set the probability of mutation
-            pop = Population(size = 500, crossover = 0.8, mutation = 0.3)
+            for t in range(chunk_size):
+                
+                print("########################################")
+                print("Optimizing for minute: {}".format(minute+t))
+                print("########################################\n")
+                
+                Chromosomes.exchange_rate_matrix = exchange_rate_matrix[t]
+                                            
+                # Create the Population object
+                # Set the population size
+                # Set the probability of crossover
+                # Set the probability of mutation
+                pop = Population(size = 500, crossover = 0.8, mutation = 0.3)
         
-            # Run the optimization procedure for max_generations number of generations
-            for i in range(1, max_generations + 1):
+                # Run the optimization procedure for max_generations number of generations
+                for i in range(1, max_generations + 1):
                 
-                print("Generation: {}".format(i))
+                    print("Generation: {}".format(i))
                 
-                # Print the top most chromosome in the population
-                print("{}\t{}".format(pop.entire_population[0].chromosome,
+                    # Print the top most chromosome in the population
+                    print("{}\t{}".format(pop.entire_population[0].chromosome,
                                       pop.entire_population[0].fitness))
                 
-                # Start evolving the population
-                pop.evolve()
+                    # Start evolving the population
+                    pop.evolve()
                 
-            f.write("{}|".format(minute))
-            for j in (pop.entire_population[0].chromosome):
-                f.write("{} ".format(j))
-            f.write("|{}\n".format(pop.entire_population[0].fitness))
+                f.write("{}|".format(minute+t))
+                for j in (pop.entire_population[0].chromosome):
+                    f.write("{} ".format(j))
+                f.write("|{}\n".format(pop.entire_population[0].fitness))
             
                
-            minute += 1
+            minute += chunk_size
+            
         except Exception as e:
             e = sys.exc_info()
             print('Error Return Type: ', type(e))
